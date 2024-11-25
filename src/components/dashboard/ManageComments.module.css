@@ -1,0 +1,68 @@
+.container {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .table th, .table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  /* CSS cho các nút trong bảng quản lý bình luận */
+
+/* Nút chung */
+.table button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  /* Nút Duyệt */
+  .table button:nth-child(1) {
+    background-color: #4CAF50; /* Màu xanh lá */
+    color: #fff;
+  }
+  
+  .table button:nth-child(1):hover {
+    background-color: #45a049; /* Màu xanh lá đậm hơn khi hover */
+  }
+  
+  /* Nút Hủy Duyệt */
+  .table button:nth-child(2) {
+    background-color: #FFC107; /* Màu vàng */
+    color: #fff;
+  }
+  
+  .table button:nth-child(2):hover {
+    background-color: #ffb300; /* Màu vàng đậm hơn khi hover */
+  }
+  
+  /* Nút Xóa */
+  .table button:nth-child(3) {
+    background-color: #F44336; /* Màu đỏ */
+    color: #fff;
+  }
+  
+  .table button:nth-child(3):hover {
+    background-color: #d32f2f; /* Màu đỏ đậm hơn khi hover */
+  }
+  
+  /* Thêm khoảng cách giữa các nút */
+  .table td button {
+    margin-right: 8px;
+  }
+  
