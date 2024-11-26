@@ -1,46 +1,66 @@
-import React, { useState, useEffect } from 'react';
-import { fetchAmenities, createAmenity, updateAmenity, deleteAmenity } from '../../api';
-import styles from './ManageAmenities.module.css';
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css'; // Import CSS cho React-Confirm-Alert
+import React, { useState, useEffect } from "react";
+import {
+  fetchAmenities,
+  createAmenity,
+  updateAmenity,
+  deleteAmenity,
+  fetchUserSetting,
+} from "../../api";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import styles from "./ManageAmenities.module.css";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho React-Confirm-Alert
 
 const ManageAmenities = () => {
   const [amenities, setAmenities] = useState([]);
-  const [newAmenity, setNewAmenity] = useState({ AmenityName: '', AmenityIcon: null });
+  const [newAmenity, setNewAmenity] = useState({
+    AmenityName: "",
+    AmenityIcon: null,
+  });
   const [editingAmenity, setEditingAmenity] = useState(null);
+  const navigate = useNavigate(); // Để điều hướng
 
   useEffect(() => {
     const loadAmenities = async () => {
       try {
+        const user = await fetchUserSetting(); // Lấy thông tin người dùng
+
+        if (user.Role !== "Quản lý") {
+          navigate("/dashboard/not-authorized"); // Chuyển hướng nếu không phải "Quản lý"
+          return;
+        }
+
         const data = await fetchAmenities();
         setAmenities(data);
       } catch (error) {
-        console.error('Lỗi khi lấy danh sách tiện nghi:', error);
-        toast.error('Lỗi khi tải danh sách tiện nghi.');
+        console.error("Lỗi khi lấy danh sách tiện nghi:", error);
+        toast.error("Lỗi khi tải danh sách tiện nghi.");
       }
     };
 
     loadAmenities();
-  }, []);
+  }, [navigate]);
+
+  // ... (Phần còn lại của thành phần không thay đổi)
 
   const handleAddAmenity = async (e) => {
     e.preventDefault();
     const formData = new FormData();
-    formData.append('AmenityName', newAmenity.AmenityName);
+    formData.append("AmenityName", newAmenity.AmenityName);
     if (newAmenity.AmenityIcon) {
-      formData.append('AmenityIcon', newAmenity.AmenityIcon);
+      formData.append("AmenityIcon", newAmenity.AmenityIcon);
     }
 
     try {
       const newAmenityResponse = await createAmenity(formData);
       setAmenities([...amenities, newAmenityResponse.data]);
-      setNewAmenity({ AmenityName: '', AmenityIcon: null });
-      toast.success('Thêm tiện nghi thành công!');
+      setNewAmenity({ AmenityName: "", AmenityIcon: null });
+      toast.success("Thêm tiện nghi thành công!");
     } catch (error) {
-      console.error('Lỗi khi thêm tiện nghi:', error);
-      toast.error('Không thể thêm tiện nghi.');
+      console.error("Lỗi khi thêm tiện nghi:", error);
+      toast.error("Không thể thêm tiện nghi.");
     }
   };
 
@@ -53,39 +73,44 @@ const ManageAmenities = () => {
     if (!editingAmenity) return;
 
     const formData = new FormData();
-    formData.append('AmenityName', editingAmenity.AmenityName);
+    formData.append("AmenityName", editingAmenity.AmenityName);
     if (editingAmenity.AmenityIcon) {
-      formData.append('AmenityIcon', editingAmenity.AmenityIcon);
+      formData.append("AmenityIcon", editingAmenity.AmenityIcon);
     }
 
     try {
-      const updatedAmenity = await updateAmenity(editingAmenity.AmenityId, formData);
+      const updatedAmenity = await updateAmenity(
+        editingAmenity.AmenityId,
+        formData
+      );
       setAmenities((prev) =>
         prev.map((amenity) =>
-          amenity.AmenityId === editingAmenity.AmenityId ? updatedAmenity.data : amenity
+          amenity.AmenityId === editingAmenity.AmenityId
+            ? updatedAmenity.data
+            : amenity
         )
       );
       setEditingAmenity(null);
-      toast.success('Cập nhật tiện nghi thành công!');
+      toast.success("Cập nhật tiện nghi thành công!");
     } catch (error) {
-      console.error('Lỗi khi cập nhật tiện nghi:', error);
-      toast.error('Không thể cập nhật tiện nghi.');
+      console.error("Lỗi khi cập nhật tiện nghi:", error);
+      toast.error("Không thể cập nhật tiện nghi.");
     }
   };
 
   const confirmDeleteAmenity = (id) => {
     confirmAlert({
-      title: 'Xác nhận xóa',
-      message: 'Bạn có chắc chắn muốn xóa tiện nghi này không?',
+      title: "Xác nhận xóa",
+      message: "Bạn có chắc chắn muốn xóa tiện nghi này không?",
       buttons: [
         {
-          label: 'Có',
+          label: "Có",
           onClick: () => handleDeleteAmenity(id),
         },
         {
-          label: 'Không',
+          label: "Không",
           onClick: () => {
-            toast.info('Hủy xóa tiện nghi.');
+            toast.info("Hủy xóa tiện nghi.");
           },
         },
       ],
@@ -95,11 +120,13 @@ const ManageAmenities = () => {
   const handleDeleteAmenity = async (id) => {
     try {
       await deleteAmenity(id);
-      setAmenities((prev) => prev.filter((amenity) => amenity.AmenityId !== id));
-      toast.success('Xóa tiện nghi thành công!');
+      setAmenities((prev) =>
+        prev.filter((amenity) => amenity.AmenityId !== id)
+      );
+      toast.success("Xóa tiện nghi thành công!");
     } catch (error) {
-      console.error('Lỗi khi xóa tiện nghi:', error);
-      toast.error('Không thể xóa tiện nghi.');
+      console.error("Lỗi khi xóa tiện nghi:", error);
+      toast.error("Không thể xóa tiện nghi.");
     }
   };
 
@@ -114,13 +141,17 @@ const ManageAmenities = () => {
           type="text"
           placeholder="Tên tiện nghi"
           value={newAmenity.AmenityName}
-          onChange={(e) => setNewAmenity({ ...newAmenity, AmenityName: e.target.value })}
+          onChange={(e) =>
+            setNewAmenity({ ...newAmenity, AmenityName: e.target.value })
+          }
           required
         />
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => setNewAmenity({ ...newAmenity, AmenityIcon: e.target.files[0] })}
+          onChange={(e) =>
+            setNewAmenity({ ...newAmenity, AmenityIcon: e.target.files[0] })
+          }
         />
         <button type="submit" className={styles.addButton}>
           Thêm Tiện Nghi
@@ -145,7 +176,10 @@ const ManageAmenities = () => {
                     type="text"
                     value={editingAmenity.AmenityName}
                     onChange={(e) =>
-                      setEditingAmenity({ ...editingAmenity, AmenityName: e.target.value })
+                      setEditingAmenity({
+                        ...editingAmenity,
+                        AmenityName: e.target.value,
+                      })
                     }
                   />
                 ) : (
@@ -165,7 +199,10 @@ const ManageAmenities = () => {
                     type="file"
                     accept="image/*"
                     onChange={(e) =>
-                      setEditingAmenity({ ...editingAmenity, AmenityIcon: e.target.files[0] })
+                      setEditingAmenity({
+                        ...editingAmenity,
+                        AmenityIcon: e.target.files[0],
+                      })
                     }
                   />
                 )}
@@ -178,8 +215,14 @@ const ManageAmenities = () => {
                   </>
                 ) : (
                   <>
-                    <button onClick={() => handleEditAmenity(amenity)}>Sửa</button>
-                    <button onClick={() => confirmDeleteAmenity(amenity.AmenityId)}>Xóa</button>
+                    <button onClick={() => handleEditAmenity(amenity)}>
+                      Sửa
+                    </button>
+                    <button
+                      onClick={() => confirmDeleteAmenity(amenity.AmenityId)}
+                    >
+                      Xóa
+                    </button>
                   </>
                 )}
               </td>

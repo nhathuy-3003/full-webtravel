@@ -1,11 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import styles from "./ManageUsers.module.css";
-import { fetchUsers, updateUser, fetchAllHotels, deleteUser } from "../../api";
-import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { confirmAlert } from 'react-confirm-alert';
-import 'react-confirm-alert/src/react-confirm-alert.css';
-import AddUser from './AddUser'; // Import component thêm người dùng
+import {
+  fetchUsers,
+  updateUser,
+  fetchAllHotels,
+  deleteUser,
+  fetchUserSetting,
+} from "../../api";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
+import AddUser from "./AddUser"; // Import component thêm người dùng
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -13,15 +20,28 @@ const ManageUsers = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
+  const navigate = useNavigate(); // Để điều hướng
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  // Di chuyển hàm loadData ra ngoài useEffect và sử dụng useCallback
+  const loadData = useCallback(async () => {
     try {
+      const user = await fetchUserSetting(); // Lấy thông tin người dùng
+
+      if (user.Role !== "Quản lý") {
+        navigate("/dashboard/not-authorized"); // Chuyển hướng nếu không phải "Quản lý"
+        return;
+      }
+
       const usersData = await fetchUsers();
       const allHotels = await fetchAllHotels();
+
+      if (!Array.isArray(usersData)) {
+        throw new Error("fetchUsers không trả về mảng hợp lệ.");
+      }
+
+      if (!Array.isArray(allHotels)) {
+        throw new Error("fetchAllHotels không trả về mảng hợp lệ.");
+      }
 
       const usersWithHotelName = usersData.map((user) => {
         const userHotel = allHotels.find(
@@ -37,86 +57,68 @@ const ManageUsers = () => {
       setHotels(allHotels);
     } catch (error) {
       console.error("Error loading data:", error);
-      toast.error('Lỗi khi tải dữ liệu.');
+      toast.error("Lỗi khi tải dữ liệu.");
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    loadData(); // Gọi hàm loadData đã được định nghĩa bên ngoài
+  }, [loadData]);
+
+  // ... (Phần còn lại của thành phần không thay đổi)
 
   const handleEditClick = (user) => {
     setIsEditing(true);
     setCurrentUser({
       ...user,
       HotelId: user.HotelId || "",
-      Password: "", // Add a new field for changing the password
+      Password: "",
     });
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const updatedUser = {
+
+    setCurrentUser({
       ...currentUser,
-      [name]: name === 'UserStatus' ? parseInt(value) : value,
-    };
-
-    // Nếu vai trò là 'Quản lý', đặt HotelId thành null
-    if (name === 'Role' && value === 'Quản lý') {
-      updatedUser.HotelId = null;
-    }
-
-    setCurrentUser(updatedUser);
+      [name]: name === "UserStatus" ? parseInt(value) : value,
+    });
   };
 
   const handleSave = async () => {
     try {
       const updatePayload = {
         ...currentUser,
-        HotelId: currentUser.Role === 'Quản lý' ? null : currentUser.HotelId,
       };
 
       if (!currentUser.Password) {
-        delete updatePayload.Password; // Xóa mật khẩu nếu không thay đổi
+        delete updatePayload.Password;
       }
+
+      console.log("Update payload:", updatePayload);
 
       await updateUser(currentUser.UserId, updatePayload);
 
-      const updatedHotel = hotels.find(
-        (hotel) => hotel.HotelId === parseInt(currentUser.HotelId, 10)
-      );
-
-      setUsers(
-        users.map((user) =>
-          user.UserId === currentUser.UserId
-            ? {
-                ...currentUser,
-                HotelName:
-                  currentUser.Role === 'Quản lý'
-                    ? 'Tất cả khách sạn'
-                    : updatedHotel
-                    ? updatedHotel.HotelName
-                    : 'Không xác định',
-              }
-            : user
-        )
-      );
-
+      await loadData(); // Reload users
       setIsEditing(false);
-      toast.success('Cập nhật người dùng thành công.');
+      toast.success("Cập nhật người dùng thành công.");
     } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error('Lỗi khi cập nhật người dùng.');
+      console.error("Error updating user:", error);
+      toast.error("Lỗi khi cập nhật người dùng.");
     }
   };
 
   const handleDeleteClick = (userId) => {
     confirmAlert({
-      title: 'Xác nhận xóa',
-      message: 'Bạn có chắc chắn muốn xóa người dùng này không?',
+      title: "Xác nhận xóa",
+      message: "Bạn có chắc chắn muốn xóa người dùng này không?",
       buttons: [
         {
-          label: 'Có',
+          label: "Có",
           onClick: () => handleDeleteUser(userId),
         },
         {
-          label: 'Không',
+          label: "Không",
           onClick: () => {},
         },
       ],
@@ -127,10 +129,10 @@ const ManageUsers = () => {
     try {
       await deleteUser(userId);
       setUsers(users.filter((user) => user.UserId !== userId));
-      toast.success('Xóa người dùng thành công.');
+      toast.success("Xóa người dùng thành công.");
     } catch (error) {
-      console.error('Error deleting user:', error);
-      toast.error('Lỗi khi xóa người dùng.');
+      console.error("Error deleting user:", error);
+      toast.error("Lỗi khi xóa người dùng.");
     }
   };
 
@@ -143,10 +145,7 @@ const ManageUsers = () => {
       <h1>Quản Lý Người Dùng</h1>
       <p>Xem, chỉnh sửa và quản lý người dùng đã đăng ký.</p>
 
-      <button
-        onClick={handleAddUserClick}
-        className={styles.addButton}
-      >
+      <button onClick={handleAddUserClick} className={styles.addButton}>
         Thêm Người Dùng
       </button>
 
@@ -171,10 +170,10 @@ const ManageUsers = () => {
               <td>{user.UserName}</td>
               <td>
                 {user.HotelId === null || user.HotelId === 0
-                  ? 'Tất cả khách sạn'
-                  : user.HotelName || 'Không xác định'}
+                  ? "Tất cả khách sạn"
+                  : user.HotelName || "Không xác định"}
               </td>
-              <td>{user.UserStatus === 1 ? 'Đang làm việc' : 'Nghỉ việc'}</td>
+              <td>{user.UserStatus === 1 ? "Đang làm việc" : "Nghỉ việc"}</td>
               <td>{user.Role}</td>
               <td>{new Date(user.created_at).toLocaleDateString()}</td>
               <td>
@@ -239,30 +238,30 @@ const ManageUsers = () => {
                 <option value="Quản lý">Quản lý</option>
               </select>
 
-              {currentUser.Role !== 'Quản lý' && (
-                <>
-                  <label>Khách sạn:</label>
-                  <select
-                    name="HotelId"
-                    value={currentUser.HotelId || ""}
-                    onChange={handleInputChange}
-                  >
-                    <option value="" disabled>
-                      Chọn khách sạn
-                    </option>
-                    {hotels.map((hotel) => (
-                      <option key={hotel.HotelId} value={hotel.HotelId}>
-                        {hotel.HotelName}
-                      </option>
-                    ))}
-                  </select>
-                </>
-              )}
+              <label>Khách sạn:</label>
+              <select
+                name="HotelId"
+                value={currentUser.HotelId || ""}
+                onChange={handleInputChange}
+              >
+                <option value="" disabled>
+                  Chọn khách sạn
+                </option>
+                {hotels.map((hotel) => (
+                  <option key={hotel.HotelId} value={hotel.HotelId}>
+                    {hotel.HotelName}
+                  </option>
+                ))}
+              </select>
 
               <label>Trạng thái:</label>
               <select
                 name="UserStatus"
-                value={currentUser.UserStatus === undefined ? 1 : currentUser.UserStatus}
+                value={
+                  currentUser.UserStatus === undefined
+                    ? 1
+                    : currentUser.UserStatus
+                }
                 onChange={handleInputChange}
               >
                 <option value={1}>Đang làm việc</option>
@@ -294,10 +293,7 @@ const ManageUsers = () => {
       )}
 
       {isAdding && (
-        <AddUser
-          onClose={() => setIsAdding(false)}
-          onUserAdded={loadData}
-        />
+        <AddUser onClose={() => setIsAdding(false)} onUserAdded={loadData} />
       )}
 
       <ToastContainer />

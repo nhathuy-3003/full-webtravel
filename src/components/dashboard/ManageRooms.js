@@ -1,37 +1,45 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   fetchHotels,
   fetchRoomsByHotelId,
+  fetchUserSetting,
   deleteRoomById,
+  deleteHotelById,
   updateRoomById,
   fetchAmenities,
   fetchRoomImagesAmbule,
   deleteRoomImage,
   uploadRoomImages,
   updateRoomImageDescription,
-  deleteHotelById
-  
- 
 } from '../../api';
-import { useNavigate } from 'react-router-dom'; // For navigation
 import styles from './ManageRooms.module.css';
-import { confirmAlert } from 'react-confirm-alert'; // For confirmation dialogs
-import 'react-confirm-alert/src/react-confirm-alert.css'; // Styles for confirmation dialogs
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
+
 const ManageRooms = () => {
   const [hotels, setHotels] = useState([]);
   const [rooms, setRooms] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState('');
   const [editingRoom, setEditingRoom] = useState(null);
   const [allAmenities, setAllAmenities] = useState([]);
   const [roomImages, setRoomImages] = useState([]);
+  const navigate = useNavigate();
 
-   // State for hotel editing
-  const navigate = useNavigate(); // For navigating to add hotel or add room pages
-  // Fetch all hotels, rooms, and amenities
+  // Fetch user role and data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        const user = await fetchUserSetting();
+        setRole(user.Role);
+
+        if (user.Role !== 'Quản lý') {
+          navigate('/dashboard/not-authorized'); // Redirect if not "Quản lý"
+          return;
+        }
+
         const hotelData = await fetchHotels();
         setHotels(hotelData);
 
@@ -46,27 +54,27 @@ const ManageRooms = () => {
         setAllAmenities(amenitiesData);
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
+        navigate('/error');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [navigate]);
 
-   
-  
-  
-   // Thêm hàm này vào ManageRooms.js
-const handleEditHotelClick = (hotelId) => {
-  navigate(`/dashboard/edit-hotel/${hotelId}`);
-};
-
+  // Handle edit hotel
+  const handleEditHotelClick = (hotelId) => {
+    navigate(`/dashboard/edit-hotel/${hotelId}`);
+  };
 
   // Open edit modal for a specific room
   const handleEditRoomClick = async (room) => {
     try {
-      setEditingRoom({ ...room, selectedAmenities: room.amenities?.map((a) => a.AmenityId) || [] });
+      setEditingRoom({
+        ...room,
+        selectedAmenities: room.amenities?.map((a) => a.AmenityId) || [],
+      });
       const images = await fetchRoomImagesAmbule(room.RoomId);
       setRoomImages(images);
     } catch (error) {
@@ -114,7 +122,7 @@ const handleEditHotelClick = (hotelId) => {
     }
   };
 
-  // Delete a room
+  // Handle delete room
   const handleDeleteRoomClick = async (roomId, hotelId) => {
     confirmAlert({
       title: 'Xác nhận xóa',
@@ -145,6 +153,7 @@ const handleEditHotelClick = (hotelId) => {
     });
   };
 
+  // Handle delete hotel
   const handleDeleteHotelClick = (hotelId) => {
     confirmAlert({
       title: 'Xác nhận xóa',
@@ -172,6 +181,7 @@ const handleEditHotelClick = (hotelId) => {
       ],
     });
   };
+
   // Upload new images with descriptions
   const handleImageUpload = async () => {
     const formData = new FormData();
@@ -236,48 +246,48 @@ const handleEditHotelClick = (hotelId) => {
     }
   };
 
+  if (loading) {
+    return <p>Đang tải dữ liệu...</p>;
+  }
+
   return (
     <div className={styles.container}>
       <h1>Quản lý Phòng & Khách sạn</h1>
 
-      <div className={styles.actions}>
-        
-        <button
-          className={styles.addHotelButton}
-          onClick={() => navigate('/dashboard/add-hotel')}
-        >
-          Thêm Khách Sạn
-        </button>
-      </div>
+      {role === 'Quản lý' && (
+        <div className={styles.actions}>
+          <button
+            className={styles.addHotelButton}
+            onClick={() => navigate('/dashboard/add-hotel')}
+          >
+            Thêm Khách Sạn
+          </button>
+        </div>
+      )}
 
-      {loading ? (
-        <p>Đang tải dữ liệu...</p>
-      ) : (
+      {hotels.length > 0 ? (
         hotels.map((hotel) => (
           <div key={hotel.id} className={styles.hotelSection}>
             <h2>{hotel['tên khách sạn']}</h2>
             <p>Địa chỉ: {hotel['địa chỉ khách sạn']}</p>
             <button
-  className={styles.editButton}
-  onClick={() => handleEditHotelClick(hotel.id)}
->
-  Sửa
-</button>
-<button
-  className={styles.addRoomButton}
-  onClick={() => navigate(`/dashboard/add-room/${hotel.id}`)}
->
-  Thêm Phòng
-</button>
-<button
-  className={styles.deleteButtonH}
-  onClick={() => handleDeleteHotelClick(hotel.id)}
->
-  Xóa Khách Sạn
-</button>
-
-
-
+              className={styles.editButton}
+              onClick={() => handleEditHotelClick(hotel.id)}
+            >
+              Sửa
+            </button>
+            <button
+              className={styles.addRoomButton}
+              onClick={() => navigate(`/dashboard/add-room/${hotel.id}`)}
+            >
+              Thêm Phòng
+            </button>
+            <button
+              className={styles.deleteButtonH}
+              onClick={() => handleDeleteHotelClick(hotel.id)}
+            >
+              Xóa Khách Sạn
+            </button>
 
             {rooms[hotel.id]?.length > 0 ? (
               <table className={styles.table}>
@@ -318,10 +328,10 @@ const handleEditHotelClick = (hotelId) => {
             )}
           </div>
         ))
+      ) : (
+        <p>Không có khách sạn nào để hiển thị.</p>
       )}
 
-
- 
       {editingRoom && (
         <div className={styles.modal}>
           <div className={styles.modalContent}>
@@ -335,7 +345,9 @@ const handleEditHotelClick = (hotelId) => {
               <input
                 type="text"
                 value={editingRoom.RoomName}
-                onChange={(e) => setEditingRoom({ ...editingRoom, RoomName: e.target.value })}
+                onChange={(e) =>
+                  setEditingRoom({ ...editingRoom, RoomName: e.target.value })
+                }
               />
             </div>
 
@@ -344,7 +356,9 @@ const handleEditHotelClick = (hotelId) => {
               <input
                 type="number"
                 value={editingRoom.Price}
-                onChange={(e) => setEditingRoom({ ...editingRoom, Price: e.target.value })}
+                onChange={(e) =>
+                  setEditingRoom({ ...editingRoom, Price: e.target.value })
+                }
               />
             </div>
 
@@ -353,7 +367,9 @@ const handleEditHotelClick = (hotelId) => {
               <input
                 type="text"
                 value={editingRoom.RoomType}
-                onChange={(e) => setEditingRoom({ ...editingRoom, RoomType: e.target.value })}
+                onChange={(e) =>
+                  setEditingRoom({ ...editingRoom, RoomType: e.target.value })
+                }
               />
             </div>
 
@@ -364,15 +380,22 @@ const handleEditHotelClick = (hotelId) => {
                   <label key={amenity.AmenityId}>
                     <input
                       type="checkbox"
-                      checked={editingRoom.selectedAmenities.includes(amenity.AmenityId)}
+                      checked={editingRoom.selectedAmenities.includes(
+                        amenity.AmenityId
+                      )}
                       onChange={() => {
                         const isSelected = editingRoom.selectedAmenities.includes(
                           amenity.AmenityId
                         );
                         const updatedAmenities = isSelected
-                          ? editingRoom.selectedAmenities.filter((id) => id !== amenity.AmenityId)
+                          ? editingRoom.selectedAmenities.filter(
+                              (id) => id !== amenity.AmenityId
+                            )
                           : [...editingRoom.selectedAmenities, amenity.AmenityId];
-                        setEditingRoom({ ...editingRoom, selectedAmenities: updatedAmenities });
+                        setEditingRoom({
+                          ...editingRoom,
+                          selectedAmenities: updatedAmenities,
+                        });
                       }}
                     />
                     {amenity.AmenityName}
@@ -385,7 +408,10 @@ const handleEditHotelClick = (hotelId) => {
               <label>Ảnh Hiện Tại:</label>
               <div className={styles.imageGrid}>
                 {roomImages.map((image, index) => (
-                  <div key={image.id || `new-${index}`} className={styles.imageItem}>
+                  <div
+                    key={image.id || `new-${index}`}
+                    className={styles.imageItem}
+                  >
                     <img
                       src={image.url || URL.createObjectURL(image.file)}
                       alt={image.description || 'Room Image'}
@@ -398,7 +424,9 @@ const handleEditHotelClick = (hotelId) => {
                         const newDescription = e.target.value;
                         setRoomImages((prevImages) =>
                           prevImages.map((img) =>
-                            img.id === image.id ? { ...img, description: newDescription } : img
+                            img.id === image.id
+                              ? { ...img, description: newDescription }
+                              : img
                           )
                         );
                       }}
@@ -408,7 +436,9 @@ const handleEditHotelClick = (hotelId) => {
                         Cập Nhật Mô Tả
                       </button>
                     )}
-                    <button onClick={() => handleDeleteImage(image.id)}>Xóa</button>
+                    <button onClick={() => handleDeleteImage(image.id)}>
+                      Xóa
+                    </button>
                   </div>
                 ))}
               </div>

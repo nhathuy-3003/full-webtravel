@@ -75,7 +75,25 @@ Route::middleware('auth:sanctum')->group(function () {
     // Các route khác...
 });
 
-Route::apiResource('user', UserController::class);
+
+
+// Định nghĩa route resource cho 'user' với prefix 'users' để tránh xung đột với route 'user/me'
+Route::apiResource('users', UserController::class);
+
+// Định nghĩa route để lấy thông tin người dùng hiện tại
+Route::middleware('auth:sanctum')->get('/user/me', [UserController::class, 'me']);
+
+// Nếu cần, bạn có thể định nghĩa thêm các route khác trong group 'auth:sanctum'
+Route::middleware('auth:sanctum')->group(function () {
+    // Các route cần xác thực
+    Route::post('change-password', [UserController::class, 'changePassword']);
+    // Các route khác...
+});
+
+Route::middleware(['auth:sanctum', 'role:Quản lý'])->group(function () {
+    Route::get('/manage-rooms', [RoomController::class, 'index']);
+});
+
 Route::post('register', [UserController::class, 'register']);
 Route::post('login', [UserController::class, 'login']);
 
@@ -83,9 +101,4 @@ Route::post('login', [UserController::class, 'login']);
 // ** php artisan make:model
 // ** php artisan make:resource
 
-// // routes/api.php
 
-// Route::middleware(['auth:api', 'admin'])->group(function () {
-//     Route::get('/comment', [CommentController::class, 'index']);
-//     // Các route quản trị khác
-// });

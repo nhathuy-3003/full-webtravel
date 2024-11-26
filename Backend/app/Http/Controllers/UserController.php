@@ -57,15 +57,7 @@ class UserController extends Controller
                 'Password' => 'required|string|min:6|max:25',
                 'Role' => 'required|in:Nhân viên,Quản lý',
                 'UserStatus' => 'required|in:0,1',
-                'HotelId' => [
-        'nullable',
-        'exists:hotel,HotelId',
-        function ($attribute, $value, $fail) use ($request) {
-            if ($request->Role === 'Nhân viên' && empty($value)) {
-                $fail('HotelId is required for Nhân viên.');
-            }
-        },
-    ],
+               'HotelId' => 'nullable|integer|exists:hotel,Hotelid',
             ],
             [
                 // Custom error messages
@@ -81,10 +73,12 @@ class UserController extends Controller
     
         $userData = $request->all();
     
-        if ($userData['Role'] === 'Quản lý') {
-            $userData['HotelId'] = null; // Managers oversee all hotels
+        if ($request->Role === 'Quản lý' && empty($request->HotelId)) {
+            $hotelId = null; // Quản lý không liên kết với khách sạn nào
+        } else {
+            $hotelId = $request->HotelId; // Liên kết với khách sạn cụ thể
         }
-    
+        
         $userData['Password'] = bcrypt($userData['Password']);
     
         $user = UserModel::create($userData);
@@ -123,15 +117,7 @@ class UserController extends Controller
             'Password' => 'nullable|string|min:6|max:25', // Cho phép cập nhật mật khẩu mới
             'Role' => 'required|in:Nhân viên,Quản lý',
             'UserStatus' => 'required|in:0,1', // Kiểm tra trạng thái (1 hoặc 0)
-           'HotelId' => [
-        'nullable',
-        'exists:hotel,HotelId',
-        function ($attribute, $value, $fail) use ($request) {
-            if ($request->Role === 'Nhân viên' && empty($value)) {
-                $fail('HotelId is required for Nhân viên.');
-            }
-        },
-    ],
+           'HotelId' => 'nullable|integer|exists:hotel,Hotelid',
         ]);
     
         if ($validator->fails()) {
@@ -145,11 +131,12 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Không tìm thấy người dùng'], 404);
         }
-        if ($request->Role === 'Quản lý') {
-            $hotelId = null;
+        if ($request->Role === 'Quản lý' && empty($request->HotelId)) {
+            $hotelId = null; // Quản lý không liên kết với khách sạn nào
         } else {
-            $hotelId = $request->HotelId;
+            $hotelId = $request->HotelId; // Liên kết với khách sạn cụ thể
         }
+        
         $user->update([
             'UserName' => $request->UserName,
             'FullName' => $request->FullName,
@@ -244,5 +231,39 @@ class UserController extends Controller
         return response()->json(['message' => 'Mật khẩu đã được thay đổi thành công.']);
     }
     
-    
+
+
+
+
+public function me(Request $request)
+{
+    $user = $request->user(); // Lấy người dùng hiện tại từ token
+
+    if (!$user) {
+        return response()->json(['message' => 'Người dùng không tồn tại'], 404);
+    }
+
+    return response()->json($user, 200);
+}
+
+public function fetchHotels(Request $request)
+{
+    $user = Auth::user(); // Lấy thông tin người dùng hiện tại
+
+    if (!$user) {
+        return response()->json(['message' => 'Không tìm thấy người dùng'], 401);
+    }
+
+    if ($user->Role === 'Quản lý') {
+        // Quản lý thấy toàn bộ khách sạn
+        $hotels = Hotel::all();
+    } else if ($user->Role === 'Nhân viên') {
+        // Nhân viên chỉ thấy khách sạn liên quan
+        $hotels = Hotel::where('id', $user->HotelId)->get();
+    } else {
+        return response()->json(['message' => 'Role không hợp lệ'], 403);
+    }
+
+    return response()->json(['data' => $hotels], 200);
+}
 }

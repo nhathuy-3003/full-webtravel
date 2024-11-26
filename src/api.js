@@ -63,7 +63,7 @@ export const fetchHotels = async (filters = {}) => {
 };
 
 // Lấy danh sách tất cả khách sạn
-export const fetchAllHotels = async (authToken) => { // Thêm authToken làm tham số
+export const fetchAllHotels = async (authToken) => {
   try {
     const response = await api.get('/hotel', {
       headers: {
@@ -71,10 +71,9 @@ export const fetchAllHotels = async (authToken) => { // Thêm authToken làm tha
       },
     });
     const hotels = response.data.data.map((hotel) => ({
-      HotelId: hotel.HotelId || hotel.id, // Chuẩn hóa thành HotelId
-      HotelName: hotel.HotelName || hotel['tên khách sạn'], // Chuẩn hóa thành HotelName
+      HotelId: hotel.HotelId || hotel.id,
+      HotelName: hotel.HotelName || hotel['tên khách sạn'],
     }));
-    console.log("Danh sách tất cả khách sạn:", hotels);
     return hotels;
   } catch (error) {
     console.error("Lỗi khi lấy danh sách khách sạn:", error);
@@ -541,60 +540,66 @@ export const deleteBookingById = async (bookingId, authToken) => { // Thêm auth
     throw error;
   }
 };
-
+// Lấy danh sách booking cho một user cụ thể (Nhân viên)
+export const fetchBookingsForUser = async (authToken, userId) => {
+  try {
+      const response = await api.get(`/booking/user/${userId}`, {
+          headers: {
+              Authorization: `Bearer ${authToken}`,
+          },
+      });
+      return response.data.data || [];
+  } catch (error) {
+      console.error("Lỗi khi lấy danh sách booking cho user:", error);
+      return [];
+  }
+};
 // ==========================================================
 // 8. Người dùng
 // ==========================================================
 
 
-// Lấy danh sách booking cho một user cụ thể (Nhân viên)
-export const fetchBookingsForUser = async (authToken, userId) => {
+
+
+// Lấy danh sách người dùng
+
+// src/api.js
+
+export const fetchUsers = async (authToken) => {
   try {
-    const response = await api.get(`/booking/user/${userId}`, {
+    const response = await api.get('/users', {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
     });
     return response.data.data;
   } catch (error) {
-    console.error("Lỗi khi lấy danh sách booking cho user:", error);
-    throw error;
-  }
-};
-
-// Lấy danh sách người dùng
-export const fetchUsers = async (authToken) => { // Thêm authToken
-  try {
-    const response = await api.get('/user', {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    }); // Đường dẫn API trả danh sách người dùng
-    return response.data.data; // Trả về danh sách người dùng từ API
-  } catch (error) {
     console.error('Lỗi khi lấy danh sách người dùng:', error);
     throw error;
   }
 };
 
+
 // Lấy thông tin người dùng từ token (đổi tên hàm)
+
+
 export const fetchUserSetting = async (token) => {
   try {
-    const response = await api.get('/user', {
-      headers: { 'Authorization': `Bearer ${token}` },
+    const response = await api.get('/user/me', {
+      headers: { Authorization: `Bearer ${token}` },
     });
 
-    // Kiểm tra nếu dữ liệu trả về có phần tử và lấy phần tử đầu tiên (data[0])
-    if (response.data && response.data.data && response.data.data.length > 0) {
-      return response.data.data[0];  // Trả về phần tử đầu tiên trong mảng dữ liệu người dùng
+    if (response.data) {
+      return response.data; // Trả về dữ liệu người dùng
     } else {
       throw new Error('Không có dữ liệu người dùng.');
     }
   } catch (error) {
-    console.error("Lỗi khi lấy thông tin người dùng:", error);
-    throw error;  // Ném lỗi để xử lý ở nơi gọi
+    console.error('Lỗi khi lấy thông tin người dùng:', error);
+    throw error;
   }
 };
+
 
 // Thay đổi mật khẩu người dùng
 export const updatePassword = async (token, currentPassword, newPassword) => {
@@ -618,47 +623,26 @@ export const updatePassword = async (token, currentPassword, newPassword) => {
 };
 
 // Cập nhật thông tin người dùng
-export const updateUser = async (userId, userData, authToken) => { // Thêm authToken
+export const updateUser = async (userId, userData, authToken) => {
   if (!userId) {
     console.error("Error: Missing userId for update.");
     throw new Error("UserId is required.");
   }
 
   try {
-    // Kiểm tra nếu mật khẩu cũ và mật khẩu mới được cung cấp
-    if (userData.currentPassword && userData.password) {
-      // Thêm logic để gửi mật khẩu cũ và mật khẩu mới cho API
-      const response = await api.post(`/check-password`, {
-        currentPassword: userData.currentPassword,  // Mật khẩu cũ
-      }, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
-
-      if (response.data.isValid) {
-        // Nếu mật khẩu cũ đúng, tiếp tục với việc thay đổi mật khẩu mới
-        userData.Password = userData.password;
-        delete userData.currentPassword;  // Loại bỏ trường currentPassword khỏi yêu cầu gửi đến API
-      } else {
-        alert("Mật khẩu cũ không đúng.");
-        return; // Dừng lại nếu mật khẩu cũ không đúng
-      }
-    }
-
-    // Gửi yêu cầu PUT với dữ liệu đã thay đổi
-    const response = await api.put(`/user/${userId}`, userData, {
+    const response = await api.put(`/users/${userId}`, userData, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
     });
     console.log("User update response:", response.data);
-    return response.data; // Trả về dữ liệu từ API
+    return response.data;
   } catch (error) {
     console.error(`Error updating user (UserId: ${userId}):`, error.response?.data || error.message);
     throw error;
   }
 };
+
 
 // Hàm login
 export const login = async (username, password) => {
@@ -686,7 +670,7 @@ export const login = async (username, password) => {
 // Tạo mới user
 export const createUser = async (userData, authToken) => { // Thêm authToken
   try {
-    const response = await api.post('/user', userData, {
+    const response = await api.post('/users', userData, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -701,7 +685,7 @@ export const createUser = async (userData, authToken) => { // Thêm authToken
 // Xóa user
 export const deleteUser = async (userId, authToken) => { // Thêm authToken
   try {
-    const response = await api.delete(`/user/${userId}`, {
+    const response = await api.delete(`/users/${userId}`, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
@@ -807,6 +791,7 @@ export const postComment = async (hotelId, comment, authToken) => { // Thêm aut
 
 
 // Thêm interceptor để tự động thêm authToken
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('authToken');

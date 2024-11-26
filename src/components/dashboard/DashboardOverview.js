@@ -9,7 +9,7 @@ import {
 } from 'chart.js';
 import styles from './DashboardOverview.module.css';
 import { AuthContext } from '../../AuthContext';
-import { fetchBookings, fetchAllHotels, fetchBookingsForUser } from '../../api'; // Import các hàm cần thiết
+import { fetchBookings, fetchBookingsForUser } from '../../api'; // Import các hàm cần thiết
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
@@ -17,45 +17,40 @@ const DashboardOverview = () => {
   const navigate = useNavigate();
   const { authToken, userData, loading: authLoading } = useContext(AuthContext); // Lấy authToken và userData từ AuthContext
   const [bookings, setBookings] = useState([]);
-  const [hotelName, setHotelName] = useState('');
+ 
   const [loading, setLoading] = useState(true); // Trạng thái tải dữ liệu
 
   useEffect(() => {
     const fetchData = async () => {
-      if (authLoading) return; // Chờ AuthContext tải xong
-
-      if (!authToken || !userData) {
-        console.error("Token không hợp lệ hoặc chưa được lưu.");
-        navigate('/dashboard-login');  // Điều hướng về trang login nếu không có token
-        return;
-      }
-
-      try {
-        // Nếu người dùng là Nhân viên, chỉ lấy booking của họ
-        // Nếu người dùng là Quản lý, lấy tất cả booking
-        let fetchedBookings = [];
-        if (userData.Role === 'Nhân viên') {
-          fetchedBookings = await fetchBookingsForUser(authToken, userData.UserId); // Hàm API cần tạo
-        } else {
-          fetchedBookings = await fetchBookings(authToken);
+        if (!authToken || !userData) {
+            console.error("Token không hợp lệ hoặc chưa được lưu.");
+            navigate('/dashboard-login'); // Điều hướng về trang login nếu không có token
+            return;
         }
-        setBookings(fetchedBookings);
 
-        // Lấy tên khách sạn nếu người dùng là Nhân viên
-        if (userData.Role === 'Nhân viên' && userData.HotelId) {
-          const allHotels = await fetchAllHotels(authToken);
-          const hotel = allHotels.find((h) => h.HotelId === userData.HotelId);
-          setHotelName(hotel ? hotel.HotelName : 'Không xác định');
+        try {
+            let fetchedBookings = [];
+            if (userData.Role === 'Nhân viên') {
+                fetchedBookings = await fetchBookingsForUser(authToken, userData.UserId);
+            } else {
+                fetchedBookings = await fetchBookings(authToken);
+            }
+
+            if (fetchedBookings.length === 0) {
+                console.warn("Không có booking nào được tìm thấy.");
+            }
+
+            setBookings(fetchedBookings);
+        } catch (error) {
+            console.error('Lỗi khi lấy dữ liệu dashboard:', error);
+        } finally {
+            setLoading(false);
         }
-      } catch (error) {
-        console.error('Lỗi khi lấy dữ liệu dashboard:', error);
-      } finally {
-        setLoading(false);
-      }
     };
 
     fetchData();
-  }, [authToken, userData, authLoading, navigate]);
+}, [authToken, userData, navigate]);
+
 
   if (authLoading || loading) {
     return <p>Đang tải dữ liệu...</p>;
@@ -127,10 +122,9 @@ const DashboardOverview = () => {
 
       {/* Hiển thị thông tin người dùng */}
       <p>
-        Xin chào, {userData.FullName}! Vai trò của bạn là: {userData.Role}.
-        {userData.Role === 'Nhân viên' && ` Bạn đang quản lý khách sạn: ${hotelName}.`}
-        Đây là các thống kê về hoạt động gần đây.
-      </p>
+  Xin chào, {userData.FullName}! Vai trò của bạn là: {userData.Role}.
+  Đây là các thống kê về hoạt động gần đây.
+</p>
 
       <div className={styles.summaryCards}>
         <div className={styles.card}>

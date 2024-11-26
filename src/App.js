@@ -35,6 +35,7 @@ import ManageComments from './components/dashboard/ManageComments';
 
 // Import AuthProvider
 import { AuthProvider } from './AuthContext';
+import NotAuthorized from './hooks/NotAuthorized';
 
 const App = () => { 
   useScrollToTop();
@@ -60,12 +61,12 @@ const App = () => {
         <Route path="/blog" element={<Blog />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/search" element={<SearchBox />} />
-      
+        
+
        
 
         {/* Route for Dashboard Login */}
         <Route path="/dashboard-login" element={<DashboardLogin/>} />
-
         {/* Dashboard routes with nested routing */}
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="overview" />} />
@@ -74,6 +75,7 @@ const App = () => {
           <Route path="rooms" element={<ManageRooms />} />
           <Route path="users" element={<ManageUsers />} />
           <Route path="settings" element={<Settings />} />
+        <Route path="not-authorized" element={<NotAuthorized />} />
           <Route path="add-hotel" element={<AddHotelPage />} />
           <Route path="add-room/:hotelId" element={<AddRoomPage />} />
           <Route path="edit-hotel/:hotelId" element={<EditHotel />} />

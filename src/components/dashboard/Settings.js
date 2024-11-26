@@ -7,7 +7,6 @@ import { updatePassword, fetchAllHotels } from '../../api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Import AuthContext
 import { AuthContext } from '../../AuthContext';
 
 const Settings = () => {
@@ -21,14 +20,13 @@ const Settings = () => {
     hotelName: '',
     currentPassword: '',
   });
-  const [loading, setLoading] = useState(true); // Trạng thái tải dữ liệu
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Get the logged-in user's data
   useEffect(() => {
     const fetchUserData = async () => {
-      if (authLoading) return; // Chờ AuthContext tải xong
+      if (authLoading) return;
 
       if (!authToken || !userData) {
         setError('Bạn chưa đăng nhập.');
@@ -37,19 +35,17 @@ const Settings = () => {
       }
 
       try {
-        // Gọi API để lấy danh sách khách sạn
         const allHotels = await fetchAllHotels(authToken);
 
-        // Cập nhật thông tin người dùng
+        const hotelName =
+          allHotels.find((hotel) => hotel.HotelId === userData.HotelId)?.HotelName || 'Không xác định';
+
         setUser({
           name: userData.FullName || '',
           email: userData.UserName || '',
           role: userData.Role || '',
           userStatus: userData.UserStatus || 1,
-          hotelName:
-            userData.HotelId
-              ? allHotels.find((hotel) => hotel.HotelId === userData.HotelId)?.HotelName || 'Không xác định'
-              : 'Quản lý tất cả khách sạn',
+          hotelName: hotelName,
           currentPassword: '',
           password: '',
         });

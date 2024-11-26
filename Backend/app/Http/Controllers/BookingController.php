@@ -170,6 +170,22 @@ class BookingController extends Controller
             ], 500);
         }
     }
+
+    public function getBookingsByUser($userId)
+{
+    $bookings = Booking::where('UserId', $userId)->get();
+
+    if ($bookings->isEmpty()) {
+        return response()->json([
+            'message' => 'Không tìm thấy booking cho người dùng này.',
+        ], 404);
+    }
+
+    return response()->json([
+        'data' => $bookings,
+    ], 200);
+}
+
     
 }
 

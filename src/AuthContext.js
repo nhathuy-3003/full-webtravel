@@ -4,9 +4,12 @@ import { fetchUserSetting } from './api'; // Đảm bảo đường dẫn đúng
 
 export const AuthContext = createContext();
 
+
+
 const getToken = () => {
   return localStorage.getItem('authToken');
 };
+
 
 export const AuthProvider = ({ children }) => {
   const [authToken, setAuthToken] = useState(getToken());
@@ -25,25 +28,27 @@ export const AuthProvider = ({ children }) => {
     setUserData(null);
   };
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (authToken && !userData) {
-        try {
-          const user = await fetchUserSetting(authToken);
-          setUserData(user);
-        } catch (error) {
-          console.error('Lỗi khi lấy thông tin người dùng:', error);
-          logout();
-        } finally {
-          setLoading(false);
-        }
-      } else {
+
+useEffect(() => {
+  const fetchUserData = async () => {
+    if (authToken) {
+      try {
+        const user = await fetchUserSetting(authToken);
+        setUserData(user);
+      } catch (error) {
+        console.error('Lỗi khi lấy thông tin người dùng:', error);
+        // Bạn có thể quyết định có logout hay không
+        // logout();
+      } finally {
         setLoading(false);
       }
-    };
+    } else {
+      setLoading(false);
+    }
+  };
 
-    fetchUserData();
-  }, [authToken, userData]);
+  fetchUserData();
+}, [authToken]);
 
   return (
     <AuthContext.Provider value={{ authToken, userData, login, logout, loading }}>
