@@ -240,12 +240,32 @@ class HotelController extends Controller
      */
     public function destroy(HotelModel $hotel)
     {
-        //
-        $hotel->delete();
-        return response()->json([
-            'message' => 'Đã xoá thành công khách sạn'
-        ], 200);
+        try {
+            DB::beginTransaction();
+    
+            // Xóa tất cả các tiện nghi liên kết
+            $hotel->amenities()->detach();
+    
+            // Xóa tất cả hình ảnh liên kết
+            DB::table('hotelimage')->where('HotelId', $hotel->HotelId)->delete();
+    
+            // Xóa tất cả các phòng liên kết
+            DB::table('room')->where('HotelId', $hotel->HotelId)->delete();
+    
+            // Xóa khách sạn
+            $hotel->delete();
+    
+            DB::commit();
+            return response()->json(['message' => 'Đã xóa thành công khách sạn'], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Lỗi khi xóa khách sạn.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
+    
 /**
      *Tiện Nghi
      */

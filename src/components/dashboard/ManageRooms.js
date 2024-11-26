@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 import {
   fetchHotels,
   fetchRoomsByHotelId,
@@ -16,6 +17,8 @@ import {
 import styles from './ManageRooms.module.css';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ManageRooms = () => {
   const [hotels, setHotels] = useState([]);
@@ -26,7 +29,9 @@ const ManageRooms = () => {
   const [allAmenities, setAllAmenities] = useState([]);
   const [roomImages, setRoomImages] = useState([]);
   const navigate = useNavigate();
-
+  const notifySuccess = (message) => toast.success(message);
+  const notifyError = (message) => toast.error(message);
+  
   // Fetch user role and data
   useEffect(() => {
     const fetchData = async () => {
@@ -78,7 +83,7 @@ const ManageRooms = () => {
       const images = await fetchRoomImagesAmbule(room.RoomId);
       setRoomImages(images);
     } catch (error) {
-      console.error('Lỗi khi tải dữ liệu phòng:', error);
+      notifyError('Lỗi khi tải dữ liệu phòng:', error);
     }
   };
 
@@ -95,30 +100,34 @@ const ManageRooms = () => {
         ...editingRoom,
         amenities: editingRoom.selectedAmenities,
       };
-
-      await updateRoomById(editingRoom.RoomId, updatedRoom); // Save room details
-
-      await handleImageUpload(); // Call the upload function for new images
-
-      alert('Cập nhật phòng thành công!');
-      handleCloseModal();
-
-      const updatedRooms = await fetchRoomsByHotelId(editingRoom.HotelId);
-      setRooms((prevRooms) => ({ ...prevRooms, [editingRoom.HotelId]: updatedRooms }));
+  
+      console.log('Cập nhật phòng:', updatedRoom);
+  
+      await updateRoomById(editingRoom.RoomId, updatedRoom); // Cập nhật phòng
+      console.log('Cập nhật phòng thành công!');
+  
+      await handleImageUpload(); // Tải ảnh
+      console.log('Tải ảnh thành công!');
+  
+      // Gọi thông báo thành công
+      notifySuccess('Cập nhật phòng thành công!');
     } catch (error) {
       console.error('Lỗi khi lưu phòng:', error);
-      alert(`Cập nhật phòng thất bại! Lỗi: ${error.response?.data?.message || error.message}`);
+      notifyError(`Cập nhật phòng thất bại! Lỗi: ${error.response?.data?.message || error.message}`);
+    } finally {
+      handleCloseModal(); // Đóng modal
     }
   };
-
+  
   // Delete a room image
   const handleDeleteImage = async (imageId) => {
     try {
       await deleteRoomImage(imageId);
       setRoomImages((prevImages) => prevImages.filter((img) => img.id !== imageId));
-      alert('Xóa ảnh thành công!');
+      notifySuccess('Xóa ảnh thành công!');
     } catch (error) {
       console.error('Lỗi khi xóa ảnh:', error);
+      notifyError('Xóa ảnh thất bại!');
     }
   };
 
@@ -133,13 +142,13 @@ const ManageRooms = () => {
           onClick: async () => {
             try {
               await deleteRoomById(roomId); // Gọi API để xóa phòng
-              alert('Xóa phòng thành công!');
+              notifySuccess('Xóa phòng thành công!');
               // Cập nhật danh sách phòng sau khi xóa thành công
               const updatedRooms = await fetchRoomsByHotelId(hotelId);
               setRooms((prevRooms) => ({ ...prevRooms, [hotelId]: updatedRooms }));
             } catch (error) {
               console.error('Lỗi khi xóa phòng:', error);
-              alert('Xóa phòng thất bại!');
+              notifyError('Xóa phòng thất bại!');
             }
           },
         },
@@ -164,7 +173,7 @@ const ManageRooms = () => {
           onClick: async () => {
             try {
               await deleteHotelById(hotelId);
-              alert('Xóa khách sạn thành công!');
+              notifySuccess('Xóa khách sạn thành công!');
               setHotels((prevHotels) => prevHotels.filter((hotel) => hotel.id !== hotelId));
               setRooms((prevRooms) => {
                 const updatedRooms = { ...prevRooms };
@@ -173,7 +182,7 @@ const ManageRooms = () => {
               });
             } catch (error) {
               console.error('Lỗi khi xóa khách sạn:', error);
-              alert('Xóa khách sạn thất bại!');
+              notifyError('Xóa khách sạn thất bại!');
             }
           },
         },
@@ -189,7 +198,7 @@ const ManageRooms = () => {
     const newImages = roomImages.filter((image) => image.file);
 
     if (newImages.length === 0) {
-      alert('Không có ảnh mới để tải lên!');
+      toast.info('Không có ảnh mới để tải lên!');
       return;
     }
 
@@ -211,14 +220,14 @@ const ManageRooms = () => {
             description: newImages[index]?.description || '',
           })),
         ]);
-        alert('Tải ảnh thành công!');
+        notifySuccess('Tải ảnh thành công!');
       } else {
         console.error('Định dạng phản hồi không mong đợi:', uploadedImages);
-        alert('Tải ảnh thất bại. Vui lòng kiểm tra API.');
+        notifyError('Tải ảnh thất bại. Vui lòng kiểm tra API.');
       }
     } catch (error) {
       console.error('Lỗi khi tải ảnh:', error);
-      alert('Tải ảnh thất bại!');
+      notifyError('Tải ảnh thất bại!');
     }
   };
 
@@ -233,7 +242,7 @@ const ManageRooms = () => {
         RoomImageDescription: image.description,
       });
 
-      alert('Cập nhật mô tả thành công!');
+      notifySuccess('Cập nhật mô tả thành công!');
 
       setRoomImages((prevImages) =>
         prevImages.map((img) =>
@@ -242,12 +251,12 @@ const ManageRooms = () => {
       );
     } catch (error) {
       console.error('Lỗi khi cập nhật mô tả ảnh:', error);
-      alert('Cập nhật mô tả thất bại.');
+      notifyError('Cập nhật mô tả thất bại.');
     }
   };
 
   if (loading) {
-    return <p>Đang tải dữ liệu...</p>;
+    return <LoadingPage />;
   }
 
   return (
@@ -374,35 +383,36 @@ const ManageRooms = () => {
             </div>
 
             <div className={styles.field}>
-              <label>Tiện Nghi:</label>
-              <div className={styles.amenities}>
-                {allAmenities.map((amenity) => (
-                  <label key={amenity.AmenityId}>
-                    <input
-                      type="checkbox"
-                      checked={editingRoom.selectedAmenities.includes(
-                        amenity.AmenityId
-                      )}
-                      onChange={() => {
-                        const isSelected = editingRoom.selectedAmenities.includes(
-                          amenity.AmenityId
-                        );
-                        const updatedAmenities = isSelected
-                          ? editingRoom.selectedAmenities.filter(
-                              (id) => id !== amenity.AmenityId
-                            )
-                          : [...editingRoom.selectedAmenities, amenity.AmenityId];
-                        setEditingRoom({
-                          ...editingRoom,
-                          selectedAmenities: updatedAmenities,
-                        });
-                      }}
-                    />
-                    {amenity.AmenityName}
-                  </label>
-                ))}
-              </div>
-            </div>
+  <label>Tiện Nghi:</label>
+  <div className={styles.amenities}>
+    {allAmenities.map((amenity) => (
+      <div
+        key={amenity.AmenityId}
+        className={`${styles.amenityItem} ${
+          editingRoom.selectedAmenities.includes(amenity.AmenityId) ? styles.selected : ''
+        }`}
+        onClick={() => {
+          const isSelected = editingRoom.selectedAmenities.includes(amenity.AmenityId);
+          const updatedAmenities = isSelected
+            ? editingRoom.selectedAmenities.filter((id) => id !== amenity.AmenityId)
+            : [...editingRoom.selectedAmenities, amenity.AmenityId];
+
+          setEditingRoom((prev) => ({
+            ...prev,
+            selectedAmenities: updatedAmenities,
+          }));
+        }}
+      >
+        <img
+          src={`http://127.0.0.1:8000/storage/${amenity.AmenityIcon}`}
+          alt={amenity.AmenityName}
+          className={styles.amenityIcon}
+        />
+        <span>{amenity.AmenityName}</span>
+      </div>
+    ))}
+  </div>
+</div>
 
             <div className={styles.field}>
               <label>Ảnh Hiện Tại:</label>
@@ -462,6 +472,7 @@ const ManageRooms = () => {
 
             <div className={styles.actions}>
               <button onClick={handleSaveRoom}>Lưu</button>
+              <ToastContainer/>
               <button onClick={handleCloseModal}>Hủy</button>
             </div>
           </div>

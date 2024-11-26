@@ -13,7 +13,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
 import AddUser from "./AddUser"; // Import component thêm người dùng
-
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [hotels, setHotels] = useState([]);
@@ -21,7 +21,7 @@ const ManageUsers = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAdding, setIsAdding] = useState(false);
   const navigate = useNavigate(); // Để điều hướng
-
+  const [loading, setLoading] = useState(true); // Trạng thái loading
   // Di chuyển hàm loadData ra ngoài useEffect và sử dụng useCallback
   const loadData = useCallback(async () => {
     try {
@@ -58,6 +58,8 @@ const ManageUsers = () => {
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Lỗi khi tải dữ liệu.");
+    } finally {
+      setLoading(false); // Dừng trạng thái loading
     }
   }, [navigate]);
 
@@ -140,6 +142,9 @@ const ManageUsers = () => {
     setIsAdding(true);
   };
 
+  if (loading) {
+    return <LoadingPage />;
+  }
   return (
     <div className={styles.container}>
       <h1>Quản Lý Người Dùng</h1>

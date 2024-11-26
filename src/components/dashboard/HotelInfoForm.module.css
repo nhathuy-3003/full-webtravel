@@ -1,54 +1,49 @@
 /* Tổng thể container */
 .container {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-/* Tiêu đề của form */
-.title {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 40px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  font-family: 'Roboto', sans-serif;
 }
 
 /* Nhóm form */
 .form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 
-/* Label cho input */
+/* Label */
 .label {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 8px;
-  color: #555;
+  color: #34495e;
 }
 
 /* Input và select */
-.input {
-  padding: 10px;
+.input,
+select {
+  padding: 14px 16px;
   border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #555;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-.input:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+.input:focus,
+select:focus {
+  border-color: #1abc9c;
+  box-shadow: 0 0 8px rgba(26, 188, 156, 0.4);
   outline: none;
 }
 
@@ -56,65 +51,114 @@
 .imageUpload {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 15px;
 }
 
 .previewImages {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   flex-wrap: wrap;
 }
 
 .previewImage {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 10px;
   border: 1px solid #ddd;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
 }
 
+.previewImage:hover {
+  transform: scale(1.1);
+}
+
+/* Tiện nghi */
 .amenitiesContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 20px;
 }
 
 .amenity {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background-color: #f7f9fb;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 120px;
 }
 
 .amenity img {
-  width: 24px;
-  height: 24px;
+  width: 60px;
+  height: 60px;
   object-fit: cover;
+  border-radius: 8px;
+}
+
+.amenity.selected {
+  border-color: #3498db;
+  background-color: #eaf6ff;
+  box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3);
+  transform: translateY(-3px) scale(1.05);
+}
+
+.amenity:hover {
+  background-color: #eef9ff;
+  border-color: #1abc9c;
+  transform: translateY(-2px) scale(1.03);
 }
 
 .amenityLabel {
   font-size: 14px;
-  color: #333;
+  font-weight: 600;
+  color: #34495e;
+  text-align: center;
 }
 
 /* Nút submit */
 .submitButton {
-  padding: 12px 20px;
-  background-color: #007bff;
+  padding: 16px 30px;
+  background-color: #3498db;
   color: #fff;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 18px;
+  font-weight: 700;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  align-self: center;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-align: center;
 }
 
 .submitButton:hover {
-  background-color: #0056b3;
+  background-color: #1abc9c;
+  transform: translateY(-3px);
 }
 
 .submitButton:active {
-  background-color: #004080;
+  background-color: #16a085;
+  transform: translateY(0);
+}
+
+/* Trạng thái tải dữ liệu */
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-size: 22px;
+  color: #3498db;
+  font-weight: bold;
 }

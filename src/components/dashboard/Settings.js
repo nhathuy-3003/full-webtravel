@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { updatePassword, fetchAllHotels } from '../../api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 import { AuthContext } from '../../AuthContext';
 
 const Settings = () => {
@@ -96,7 +96,7 @@ const Settings = () => {
   };
 
   if (authLoading || loading) {
-    return <p>Đang tải dữ liệu...</p>;
+    return <LoadingPage />;
   }
 
   if (error) {

@@ -12,7 +12,9 @@ import {
 } from '../../api';
 import { useParams, useNavigate } from 'react-router-dom';
 import styles from './EditHotel.module.css';
-
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const EditHotel = () => {
   const { hotelId } = useParams();
   const navigate = useNavigate();
@@ -85,7 +87,7 @@ setImageDescriptions(descriptions);
         const amenityIds = hotelAmenities.map((amenity) => amenity.AmenityId);
         setSelectedAmenities(amenityIds);
       } catch (error) {
-        console.error('Lỗi khi tải dữ liệu khách sạn:', error);
+        toast.error('Lỗi khi tải dữ liệu khách sạn:', error);
       } finally {
         setLoading(false);
       }
@@ -99,10 +101,10 @@ setImageDescriptions(descriptions);
     try {
       await deleteHotelImage(imageId);
       setHotelImages(hotelImages.filter((img) => img.id !== imageId));
-      alert("Xóa ảnh thành công!");
+      toast.success("Xóa ảnh thành công!");
     } catch (error) {
       console.error("Lỗi khi xóa ảnh:", error);
-      alert("Xóa ảnh thất bại!");
+      toast.error("Xóa ảnh thất bại!");
     }
   };
 
@@ -128,14 +130,14 @@ const handleImageDescriptionChange = (imageId, value) => {
     }
 
     await uploadHotelImages(formData);
-    alert("Thêm ảnh thành công!");
+    toast.success("Thêm ảnh thành công!");
     setNewImages([]);
     setNewDescriptions([]);
     const updatedImages = await fetchHotelImages(hotelId);
     setHotelImages(updatedImages);
   } catch (error) {
     console.error("Lỗi khi tải lên hình ảnh:", error);
-    alert("Thêm ảnh thất bại!");
+    toast.error("Thêm ảnh thất bại!");
   }
 };
 
@@ -148,10 +150,10 @@ const handleImageDescriptionChange = (imageId, value) => {
       setHotelImages((prev) =>
         prev.map((img) => (img.id === imageId ? { ...img, description: newDescription } : img))
       );
-      alert("Cập nhật mô tả thành công!");
+      toast.success("Cập nhật mô tả thành công!");
     } catch (error) {
       console.error("Lỗi khi cập nhật mô tả hình ảnh:", error);
-      alert("Cập nhật mô tả thất bại!");
+      toast.error("Cập nhật mô tả thất bại!");
     }
   };
   
@@ -202,38 +204,43 @@ const handleImageDescriptionChange = (imageId, value) => {
             updatedHotel.AmenityIds = selectedAmenities;
         }
 
+        console.log("Updated Hotel Object:", updatedHotel);
         if (Object.keys(updatedHotel).length === 0) {
-            alert("Không có thay đổi nào để cập nhật.");
-            return;
+          console.log("Không có thay đổi để cập nhật");
+          toast.info("Không có thay đổi nào để cập nhật.");
+          return;
         }
+        
 
         console.log('Updated Hotel Data:', updatedHotel);
 
         await updateHotelById(hotel.id, updatedHotel);
 
-        alert('Cập nhật khách sạn thành công!');
-        navigate('/dashboard/rooms');
+        toast.success("Cập nhật khách sạn thành công!");
+setTimeout(() => navigate('/dashboard/rooms'), 3000); // Trì hoãn 3 giây
     } catch (error) {
         console.error('Lỗi khi cập nhật khách sạn:', error.response?.data || error.message);
-        alert(`Cập nhật khách sạn thất bại! Lỗi: ${error.response?.data?.message || error.message}`);
+        toast.error(`Cập nhật khách sạn thất bại! Lỗi: ${error.response?.data?.message || error.message}`);
     }
 };
 
-  
-  const handleAmenityChange = (amenityId) => {
-    const isSelected = selectedAmenities.includes(amenityId);
-    const updatedAmenities = isSelected
-      ? selectedAmenities.filter((id) => id !== amenityId)
-      : [...selectedAmenities, amenityId];
-    setSelectedAmenities(updatedAmenities);
-  };
+const handleAmenityChange = (amenityId) => {
+  setSelectedAmenities((prev) => {
+    if (prev.includes(amenityId)) {
+      return prev.filter((id) => id !== amenityId); // Loại bỏ nếu đã chọn
+    } else {
+      return [...prev, amenityId]; // Thêm nếu chưa chọn
+    }
+  });
+};
 
   if (loading || !hotel) {
-    return <p>Đang tải dữ liệu...</p>;
+    return <LoadingPage />;
   }
 
   return (
     <div className={styles.container}>
+       <ToastContainer />
       <h1>Chỉnh sửa Khách sạn</h1>
 
       <div className={styles.field}>
@@ -321,37 +328,54 @@ const handleImageDescriptionChange = (imageId, value) => {
       <div className={styles.field}>
         <label>Tiện Nghi:</label>
         <div className={styles.amenities}>
-          {allAmenities.map((amenity) => (
-            <label key={amenity.AmenityId}>
-              <input
-                type="checkbox"
-                checked={selectedAmenities.includes(amenity.AmenityId)}
-                onChange={() => handleAmenityChange(amenity.AmenityId)}
-              />
-              {amenity.AmenityName}
-            </label>
-          ))}
-        </div>
+  {allAmenities.map((amenity) => (
+    <div
+      key={amenity.AmenityId}
+      className={`${styles.amenityItem} ${
+        selectedAmenities.includes(amenity.AmenityId) ? styles.selected : ""
+      }`}
+      onClick={() => handleAmenityChange(amenity.AmenityId)}
+    >
+      <input
+        type="checkbox"
+        checked={selectedAmenities.includes(amenity.AmenityId)}
+        onChange={() => handleAmenityChange(amenity.AmenityId)}
+        style={{ display: "none" }} // Ẩn checkbox, chỉ dùng để cập nhật trạng thái
+      />
+      <img
+        src={`http://127.0.0.1:8000/storage/${amenity.AmenityIcon}`}
+        alt={amenity.AmenityName}
+        className={styles.amenityIcon}
+      />
+      <span>{amenity.AmenityName}</span>
+    </div>
+  ))}
+</div>
+
+
       </div>
 
       <div className={styles.images}>
         <h3>Hình ảnh khách sạn</h3>
         <div className={styles.imageList}>
-          {hotelImages.map((image) => (
-            <div key={image.id} className={styles.imageItem}>
-              <img src={image.url} alt="Hình ảnh khách sạn" />
-              <textarea
-                value={imageDescriptions[image.id]}
-                onChange={(e) => handleImageDescriptionChange(image.id, e.target.value)}
-                placeholder="Nhập mô tả"
-              />
-              <button onClick={() => handleUpdateImageDescription(image.id)}>
-                Cập nhật mô tả
-              </button>
-              <button onClick={() => handleImageDelete(image.id)}>Xóa</button>
-            </div>
-          ))}
-        </div>
+  {hotelImages.map((image) => (
+    <div key={image.id} className={styles.imageItem}>
+      <img src={image.url} alt="Hình ảnh khách sạn" />
+      <textarea
+        value={imageDescriptions[image.id]}
+        onChange={(e) =>
+          handleImageDescriptionChange(image.id, e.target.value)
+        }
+        placeholder="Nhập mô tả"
+      />
+      <button onClick={() => handleUpdateImageDescription(image.id)}>
+        Cập nhật mô tả
+      </button>
+      <button onClick={() => handleImageDelete(image.id)}>Xóa</button>
+    </div>
+  ))}
+</div>
+
 
         <div className={styles.imageUpload}>
           <label>Thêm ảnh mới:</label>
@@ -377,11 +401,14 @@ const handleImageDescriptionChange = (imageId, value) => {
       </div>
 
 
-      <div className={styles.actions}>
+      <div className={styles.actions} >
         <button onClick={handleSaveHotel}>Lưu</button>
         <button onClick={() => navigate('/dashboard/rooms')}>Hủy</button>
+     
       </div>
+     
     </div>
+    
   );
 };
 

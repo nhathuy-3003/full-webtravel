@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { createRoom, fetchAmenities, fetchHotels } from '../../api'; // fetchHotels to get the list of hotels
+import { createRoom, fetchAmenities, fetchHotels } from '../../api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import styles from './RoomInfoForm.module.css';
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 
 const RoomInfoForm = ({ hotelId, onRoomCreated }) => {
   const [formValues, setFormValues] = useState({
-    hotelId: hotelId || '', // Use hotelId from props if available
+    hotelId: hotelId || '',
     roomName: '',
     roomType: '',
     roomStatus: '',
@@ -14,13 +17,12 @@ const RoomInfoForm = ({ hotelId, onRoomCreated }) => {
     amenities: [],
   });
 
-  const [hotels, setHotels] = useState([]); // List of hotels
+  const [hotels, setHotels] = useState([]);
   const [amenities, setAmenities] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Declare the state variable for selectedHotelName
+  const [loadingPage, setLoadingPage] = useState(true); // Loading state for page
   const [selectedHotelName, setSelectedHotelName] = useState('');
-
+  const [selectedAmenities, setSelectedAmenities] = useState([]);
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -30,19 +32,19 @@ const RoomInfoForm = ({ hotelId, onRoomCreated }) => {
         const hotelData = await fetchHotels();
         setHotels(hotelData);
 
-        // If hotelId is provided, find and save the hotel name
         if (hotelId) {
           const selectedHotel = hotelData.find(
             (hotel) => hotel.id.toString() === hotelId.toString()
           );
           if (selectedHotel) {
             setSelectedHotelName(selectedHotel['tên khách sạn']);
-          } else {
-            console.warn(`Không tìm thấy khách sạn với ID: ${hotelId}`);
           }
         }
       } catch (error) {
+        toast.error('Lỗi khi tải dữ liệu.');
         console.error('Error fetching data:', error);
+      } finally {
+        setLoadingPage(false); // Turn off the loading page
       }
     };
 
@@ -55,26 +57,26 @@ const RoomInfoForm = ({ hotelId, onRoomCreated }) => {
   };
 
   const handleAmenityChange = (amenityId) => {
-    setFormValues((prevState) => {
-      const updatedAmenities = prevState.amenities.includes(amenityId)
-        ? prevState.amenities.filter((id) => id !== amenityId)
-        : [...prevState.amenities, amenityId];
-      return { ...prevState, amenities: updatedAmenities };
-    });
-  };
-
-  useEffect(() => {
-    setFormValues((prevValues) => ({
-      ...prevValues,
-      hotelId: hotelId || '',
+    setSelectedAmenities((prev) => {
+      if (prev.includes(amenityId)) {
+        return prev.filter((id) => id !== amenityId); // Remove if already selected
+      } else {
+        return [...prev, amenityId]; // Add if not selected
+      }
+    }); 
+    setFormValues((prev) => ({
+      ...prev,
+      amenities: selectedAmenities.includes(amenityId)
+        ? selectedAmenities.filter((id) => id !== amenityId)
+        : [...selectedAmenities, amenityId],
     }));
-  }, [hotelId]);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formValues.hotelId && !hotelId) {
-      alert('Vui lòng chọn khách sạn.');
+      toast.warn('Vui lòng chọn khách sạn.');
       return;
     }
 
@@ -93,23 +95,28 @@ const RoomInfoForm = ({ hotelId, onRoomCreated }) => {
       };
 
       const response = await createRoom(roomData);
-      alert('Phòng được tạo thành công!');
+      toast.success('Phòng được tạo thành công!');
       onRoomCreated(response.data.RoomId);
     } catch (error) {
       if (error.response) {
         console.error('Lỗi từ server:', error.response.data);
-        alert('Lỗi: ' + (error.response.data.message || 'Không xác định'));
+        toast.error('Lỗi: ' + (error.response.data.message || 'Không xác định'));
       } else {
         console.error('Lỗi không xác định:', error.message);
-        alert('Lỗi không xác định');
+        toast.error('Lỗi không xác định');
       }
     } finally {
       setLoading(false);
     }
   };
 
+  if (loadingPage) {
+    return <LoadingPage />;
+  }
+
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
+      <ToastContainer />
       {hotelId ? (
         <div className={styles.formGroup}>
           <label>Khách Sạn:</label>
@@ -194,19 +201,30 @@ const RoomInfoForm = ({ hotelId, onRoomCreated }) => {
         ></textarea>
       </div>
       <div className={styles.formGroup}>
-        <label>Tiện Nghi</label>
-        <div>
+        <label>Tiện Nghi:</label>
+        <div className={styles.amenities}>
           {amenities.map((amenity) => (
-            <div key={amenity.AmenityId}>
+            <div
+              key={amenity.AmenityId}
+              className={`${styles.amenityItem} ${
+                selectedAmenities.includes(amenity.AmenityId)
+                  ? styles.selected
+                  : ''
+              }`}
+              onClick={() => handleAmenityChange(amenity.AmenityId)}
+            >
               <input
                 type="checkbox"
-                id={`amenity-${amenity.AmenityId}`}
-                checked={formValues.amenities.includes(amenity.AmenityId)}
+                checked={selectedAmenities.includes(amenity.AmenityId)}
                 onChange={() => handleAmenityChange(amenity.AmenityId)}
+                style={{ display: 'none' }}
               />
-              <label htmlFor={`amenity-${amenity.AmenityId}`}>
-                {amenity.AmenityName}
-              </label>
+              <img
+                src={`http://127.0.0.1:8000/storage/${amenity.AmenityIcon}`}
+                alt={amenity.AmenityName}
+                className={styles.amenityIcon}
+              />
+              <span>{amenity.AmenityName}</span>
             </div>
           ))}
         </div>

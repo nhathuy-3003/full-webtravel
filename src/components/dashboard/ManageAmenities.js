@@ -12,7 +12,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css"; // Import CSS cho React-Confirm-Alert
-
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 const ManageAmenities = () => {
   const [amenities, setAmenities] = useState([]);
   const [newAmenity, setNewAmenity] = useState({
@@ -21,14 +21,13 @@ const ManageAmenities = () => {
   });
   const [editingAmenity, setEditingAmenity] = useState(null);
   const navigate = useNavigate(); // Để điều hướng
-
+  const [loading, setLoading] = useState(true); // Trạng thái loading
   useEffect(() => {
     const loadAmenities = async () => {
       try {
-        const user = await fetchUserSetting(); // Lấy thông tin người dùng
-
+        const user = await fetchUserSetting();
         if (user.Role !== "Quản lý") {
-          navigate("/dashboard/not-authorized"); // Chuyển hướng nếu không phải "Quản lý"
+          navigate("/dashboard/not-authorized");
           return;
         }
 
@@ -37,6 +36,8 @@ const ManageAmenities = () => {
       } catch (error) {
         console.error("Lỗi khi lấy danh sách tiện nghi:", error);
         toast.error("Lỗi khi tải danh sách tiện nghi.");
+      } finally {
+        setLoading(false); // Dừng trạng thái loading
       }
     };
 
@@ -130,6 +131,9 @@ const ManageAmenities = () => {
     }
   };
 
+  if (loading) {
+    return <LoadingPage />;
+  }
   return (
     <div className={styles.container}>
       <ToastContainer />

@@ -3,11 +3,11 @@ import { fetchBookings, updateBookingById, deleteBookingById } from '../../api';
 import styles from './ManageBookings.module.css';
 import { confirmAlert } from 'react-confirm-alert';
 import 'react-confirm-alert/src/react-confirm-alert.css';
-
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 const ManageBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [selectedBooking, setSelectedBooking] = useState(null);
-
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     const loadBookings = async () => {
       try {
@@ -15,6 +15,8 @@ const ManageBookings = () => {
         setBookings(data);
       } catch (error) {
         console.error('Failed to fetch bookings:', error);
+      }finally {
+        setLoading(false);
       }
     };
 
@@ -87,7 +89,9 @@ const ManageBookings = () => {
   const closeModal = () => {
     setSelectedBooking(null);
   };
-
+  if (loading) {
+    return <LoadingPage />; // Hiển thị LoadingPage khi đang tải
+  }
   return (
     <div className={styles.container}>
       <h1>Quản Lý Đặt Phòng</h1>

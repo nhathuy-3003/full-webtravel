@@ -10,7 +10,7 @@ import {
 import styles from './DashboardOverview.module.css';
 import { AuthContext } from '../../AuthContext';
 import { fetchBookings, fetchBookingsForUser } from '../../api'; // Import các hàm cần thiết
-
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 const DashboardOverview = () => {
@@ -53,7 +53,7 @@ const DashboardOverview = () => {
 
 
   if (authLoading || loading) {
-    return <p>Đang tải dữ liệu...</p>;
+    return  <LoadingPage />;
   }
 
   // Sample Data for Charts (Bạn có thể thay đổi theo dữ liệu thực tế)

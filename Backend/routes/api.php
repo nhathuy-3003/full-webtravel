@@ -63,6 +63,17 @@ Route::get('/room/{roomId}/images', [RoomController::class, 'getRoomImages']);
 // ** Khúc này của bảng booking
 Route::apiResource('booking', BookingController::class);
 
+// Route để lấy tất cả booking của một khách sạn
+Route::get('/hotel/{hotelId}/bookings', [BookingController::class, 'getBookingsByHotel']);
+
+// Route để lấy tất cả booking của một khách hàng
+Route::get('/customer/{customerId}/bookings', [BookingController::class, 'getBookingsByCustomer']);
+
+// Route để gửi lại email xác nhận (nếu cần)
+Route::post('/booking/{bookingId}/resend-email', [BookingController::class, 'resendConfirmationEmail']);
+
+
+
 // ** Khúc này của bảng Comment
 Route::apiResource('comment', CommentController::class);
 Route::get('/comment/hotel/{hotelId}', [CommentController::class, 'getCommentsByHotel']);

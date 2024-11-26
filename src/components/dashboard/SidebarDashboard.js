@@ -8,6 +8,8 @@ import {
   faUser,
   faCog,
   faBars,
+  faBell,
+  faComment
 } from '@fortawesome/free-solid-svg-icons';
 import styles from './SidebarDashboard.module.css';
 import logo from '../../assets/images/logo1.png';
@@ -66,14 +68,14 @@ const SidebarDashboard = () => {
     `${styles.navLink} ${isActive ? styles.active : ''}`
   }
 >
-  <FontAwesomeIcon icon={faCog} className={styles.icon} />
+<FontAwesomeIcon icon={faBell}  className={styles.icon} />
   {!isCollapsed && <span>Quản Lý Tiện Nghi</span>}
 </NavLink>
 <NavLink to="/dashboard/comments" className={({ isActive }) =>
     `${styles.navLink} ${isActive ? styles.active : ''}`
   }
 >
-  <FontAwesomeIcon icon={faUser} className={styles.icon} />
+<FontAwesomeIcon icon={faComment} className={styles.icon} />
   {!isCollapsed && <span>Quản Lý Bình Luận</span>}
 </NavLink>
 

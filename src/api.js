@@ -463,16 +463,16 @@ export const deleteRoomImage = async (imageId, authToken) => { // Thêm authToke
 // ==========================================================
 
 // Lấy danh sách booking
-export const fetchBookings = async (authToken) => { // Thêm authToken
+export const fetchBookings = async (authToken) => {
   try {
     const response = await api.get('/booking', {
       headers: {
-        Authorization: `Bearer ${authToken}`,
+        Authorization: `Bearer ${authToken}`, // Đảm bảo token đúng
       },
     });
-    return response.data.data; // Trả về danh sách booking
+    return response.data.data;
   } catch (error) {
-    console.error("Lỗi khi lấy danh sách booking:", error);
+    console.error('Lỗi khi lấy danh sách booking:', error);
     throw error;
   }
 };

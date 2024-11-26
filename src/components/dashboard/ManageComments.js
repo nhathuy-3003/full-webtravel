@@ -5,7 +5,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-
+import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
 const ManageComments = () => {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -97,6 +97,9 @@ const ManageComments = () => {
   };
 
   // Render UI
+  if (loading) {
+    return <LoadingPage />; // Hiển thị LoadingPage khi đang tải
+  }
   return (
     <div className={styles.container}>
       <ToastContainer />

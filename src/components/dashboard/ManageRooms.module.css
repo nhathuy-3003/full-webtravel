@@ -227,6 +227,10 @@ button.deleteButton:hover {
   gap: 5px;
 }
 
+
+/*modal*/
+
+/* Tổng thể modal */
 .modal {
   position: fixed;
   top: 0;
@@ -240,16 +244,234 @@ button.deleteButton:hover {
   z-index: 1000;
 }
 
+/* Nội dung chính của modal */
 .modalContent {
   background: white;
-  padding: 20px;
-  border-radius: 10px;
+  padding: 25px;
+  border-radius: 12px;
   width: 700px;
   max-height: 80vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  animation: fadeIn 0.3s ease;
 }
+
+/* Hiệu ứng mờ dần khi mở modal */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Nút đóng modal */
+.closeButton {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #555;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.closeButton:hover {
+  color: #e74c3c;
+}
+
+/* Các trường chỉnh sửa */
+.field {
+  margin-bottom: 20px;
+}
+
+.field label {
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: block;
+  color: #333;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #f9f9f9;
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: #3498db;
+  background-color: #ffffff;
+  outline: none;
+}
+
+/* Grid chứa hình ảnh */
+.imageGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* Phần tử hình ảnh */
+.imageItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.imageItem:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Hình ảnh */
+.imageItem img {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+}
+
+/* Trường nhập mô tả */
+.imageItem input {
+  width: 100%;
+  font-size: 12px;
+  text-align: center;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease;
+}
+
+.imageItem input:focus {
+  border-color: #3498db;
+  background-color: #ffffff;
+  outline: none;
+}
+
+/* Nút hành động trong hình ảnh */
+.imageItem button {
+  margin-top: 8px;
+  font-size: 12px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.imageItem button:hover {
+  background-color: #2980b9;
+}
+
+.imageItem button:last-child {
+  background-color: #e74c3c;
+}
+
+.imageItem button:last-child:hover {
+  background-color: #c0392b;
+}
+
+/* Phần hành động lưu/hủy */
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.actions button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+/* Nút lưu */
+.actions button:first-child {
+  background-color: #28a745;
+  color: white;
+}
+
+.actions button:first-child:hover {
+  background-color: #218838;
+}
+
+/* Nút hủy */
+.actions button:last-child {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.actions button:last-child:hover {
+  background-color: #c0392b;
+}
+.amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.amenityItem {
+  width: 100px;
+  text-align: center;
+  padding: 10px;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: transform 0.3s, border-color 0.3s, background-color 0.3s;
+}
+
+.amenityItem:hover {
+  transform: scale(1.05);
+  background-color: #e9ecef;
+}
+
+.amenityIcon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 5px;
+}
+
+.amenityItem span {
+  font-size: 14px;
+  font-weight: bold;
+  color: #333;
+}
+
+.selected {
+  border-color: #007bff;
+  background-color: #e7f3ff;
+  transform: scale(1.1);
+}
+
 
 .closeButton {
   position: absolute;
