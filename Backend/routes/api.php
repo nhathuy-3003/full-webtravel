@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AmenityController;
 use App\Http\Controllers\CommentController;
-
+use App\Http\Controllers\RevenueController;
 
 Route::get('/user', function (Request $request) {
     \Log::info('Dữ liệu nhận từ Frontend:', $request->all());
@@ -72,6 +72,11 @@ Route::get('/customer/{customerId}/bookings', [BookingController::class, 'getBoo
 // Route để gửi lại email xác nhận (nếu cần)
 Route::post('/booking/{bookingId}/resend-email', [BookingController::class, 'resendConfirmationEmail']);
 
+// ** Tính tổng doanh thu tháng
+Route::get('/month-revenue', [RevenueController::class, 'getTotalRevenue']);
+
+// ** Xuất file tổng doanh thu tháng
+Route::get('/export-monthly-revenue', [RevenueController::class, 'exportMonthlyRevenue']);
 
 
 // ** Khúc này của bảng Comment
@@ -111,5 +116,3 @@ Route::post('login', [UserController::class, 'login']);
 // ** php artisan make:controller
 // ** php artisan make:model
 // ** php artisan make:resource
-
-
