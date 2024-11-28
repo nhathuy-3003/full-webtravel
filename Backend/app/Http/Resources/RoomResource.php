@@ -29,13 +29,13 @@ class RoomResource extends JsonResource
                     'AmenityName' => $amenity->AmenityName,
                 ];
             }),
-            // 'Img Room' => $this->imageRoom->map(function ($img) {
-            //     return [
-            //         'Id ảnh' => $img->RoomImageId,
-            //         'Url ảnh' => $img->RoomUrl,
-            //         'Mô tả ảnh' => $img->RoomImageDescription,
-            //     ];
-            // })
+            'Img Room' => $this->images->map(function ($img) {
+                return [
+                    'Id ảnh' => $img->RoomImageId,
+                    'Url ảnh' => $img->RoomImageUrl,
+                    'Mô tả ảnh' => $img->RoomImageDescription,
+                ];
+            })
         ];
     }
 }
