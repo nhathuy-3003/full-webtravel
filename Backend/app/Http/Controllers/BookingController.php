@@ -227,7 +227,9 @@ $customer = CustomerModel::create([
 
 public function getBookingsByHotel($hotelId)
 {
-    $bookings = BookingModel::where('HotelId', $hotelId)->with(['customer', 'room'])->get();
+    $bookings = BookingModel::where('HotelId', $hotelId)
+        ->with(['customer', 'hotel', 'room'])
+        ->get();
 
     if ($bookings->isEmpty()) {
         return response()->json(['message' => 'Không tìm thấy booking cho khách sạn này.'], 404);
@@ -235,6 +237,7 @@ public function getBookingsByHotel($hotelId)
 
     return response()->json(['data' => $bookings], 200);
 }
+
 public function getBookingsByCustomer($customerId)
 {
     $bookings = BookingModel::where('CustomerId', $customerId)->with(['hotel', 'room'])->get();

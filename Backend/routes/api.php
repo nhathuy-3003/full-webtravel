@@ -66,6 +66,7 @@ Route::apiResource('booking', BookingController::class);
 // Route để lấy tất cả booking của một khách sạn
 Route::get('/hotel/{hotelId}/bookings', [BookingController::class, 'getBookingsByHotel']);
 
+
 // Route để lấy tất cả booking của một khách hàng
 Route::get('/customer/{customerId}/bookings', [BookingController::class, 'getBookingsByCustomer']);
 

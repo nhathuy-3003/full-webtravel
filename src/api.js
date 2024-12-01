@@ -555,6 +555,22 @@ export const fetchBookingsForUser = async (authToken, userId) => {
       return [];
   }
 };
+// Lấy danh sách booking dựa trên HotelId
+export const fetchBookingsByHotelId = async (hotelId, authToken) => {
+  try {
+    const response = await api.get(`/hotel/${hotelId}/bookings`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    return response.data.data; // Đảm bảo dữ liệu trả về chứa thông tin khách sạn
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách booking theo HotelId:', error);
+    throw error;
+  }
+};
+
+
 // ==========================================================
 // 8. Người dùng
 // ==========================================================
