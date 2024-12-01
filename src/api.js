@@ -325,6 +325,7 @@ export const fetchRoomsByHotelId = async (hotelId, authToken) => { // Thêm auth
   }
 };
 
+
 // Tạo phòng mới
 export const createRoom = async (roomData, authToken) => { // Thêm authToken
   try {
@@ -645,18 +646,18 @@ export const updateUser = async (userId, userData, authToken) => {
 
 
 // Hàm login
-export const login = async (username, password) => {
+export const login = async (username, password, role) => {
   try {
     const response = await api.post('/login', {
       UserName: username,
       Password: password,
+      Role: role, // Gửi vai trò đến API
     });
 
     if (response.data && response.data.token) {
-      // Trả về cả token và thông tin người dùng
       return {
         token: response.data.token,
-        user: response.data.user, // Đảm bảo backend trả về 'user' trong response
+        user: response.data.user, // Thông tin người dùng
       };
     } else {
       throw new Error('Không có token trong phản hồi');
@@ -666,6 +667,7 @@ export const login = async (username, password) => {
     throw error;
   }
 };
+
 
 // Tạo mới user
 export const createUser = async (userData, authToken) => { // Thêm authToken

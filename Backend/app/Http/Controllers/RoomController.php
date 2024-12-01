@@ -233,7 +233,7 @@ class RoomController extends Controller
     public function getRoomsByHotel($hotelId)
     {
         $rooms = RoomModel::where('HotelId', $hotelId)
-            ->with(['images', 'amenities']) // Thêm tiện nghi
+            ->with(['images', 'amenities', 'hotel']) // Thêm tiện nghi
             ->get();
     
         if ($rooms->isEmpty()) {

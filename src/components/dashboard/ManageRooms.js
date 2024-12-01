@@ -37,34 +37,47 @@ const ManageRooms = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const user = await fetchUserSetting();
+        const user = await fetchUserSetting(); // Lấy thông tin người dùng
         setRole(user.Role);
-
-        if (user.Role !== 'Quản lý') {
-          navigate('/dashboard/not-authorized'); // Redirect if not "Quản lý"
-          return;
+  
+        if (user.Role === 'Quản lý') {
+          // Nếu là Quản lý, tải toàn bộ khách sạn và phòng
+          const hotelData = await fetchHotels(); // Tải danh sách khách sạn
+          setHotels(hotelData);
+  
+          const roomsData = {};
+          for (const hotel of hotelData) {
+            
+            const hotelRooms = await fetchRoomsByHotelId(hotel.id); // Tải danh sách phòng theo HotelId
+            roomsData[hotel.id] = hotelRooms || [];
+          }
+          setRooms(roomsData);
+  
+          const amenitiesData = await fetchAmenities(); // Tải danh sách tiện nghi
+          setAllAmenities(amenitiesData);
+        } else if (user.Role === 'Nhân viên') {
+          // Nếu là Nhân viên, chỉ tải phòng thuộc khách sạn họ quản lý
+          if (!user.HotelId) {
+            console.error('Nhân viên không có HotelId được gán.');
+            console.error('Nhân viên không có HotelId được gán.');
+            setRooms([]); // Không có phòng nếu không gán HotelId
+            return;
+          }
+  
+          const roomsData = await fetchRoomsByHotelId(user.HotelId); // Tải danh sách phòng
+          setRooms({ [user.HotelId]: roomsData }); // Lưu phòng vào object với HotelId làm key
+        } else {
+          console.warn('Vai trò không được hỗ trợ:', user.Role);
+          setRooms([]); // Không hiển thị gì nếu vai trò không được hỗ trợ
         }
-
-        const hotelData = await fetchHotels();
-        setHotels(hotelData);
-
-        const roomsData = {};
-        for (const hotel of hotelData) {
-          const hotelRooms = await fetchRoomsByHotelId(hotel.id);
-          roomsData[hotel.id] = hotelRooms || [];
-        }
-        setRooms(roomsData);
-
-        const amenitiesData = await fetchAmenities();
-        setAllAmenities(amenitiesData);
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
-        navigate('/error');
+        navigate('/error'); // Điều hướng tới trang lỗi
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, [navigate]);
 
@@ -142,13 +155,14 @@ const ManageRooms = () => {
           onClick: async () => {
             try {
               await deleteRoomById(roomId); // Gọi API để xóa phòng
-              notifySuccess('Xóa phòng thành công!');
+              notifySuccess('Xóa phòng thành công!'); // Thông báo thành công
+  
               // Cập nhật danh sách phòng sau khi xóa thành công
               const updatedRooms = await fetchRoomsByHotelId(hotelId);
               setRooms((prevRooms) => ({ ...prevRooms, [hotelId]: updatedRooms }));
             } catch (error) {
               console.error('Lỗi khi xóa phòng:', error);
-              notifyError('Xóa phòng thất bại!');
+              notifyError('Xóa phòng thất bại!'); // Thông báo lỗi nếu có
             }
           },
         },
@@ -161,6 +175,7 @@ const ManageRooms = () => {
       ],
     });
   };
+  
 
   // Handle delete hotel
   const handleDeleteHotelClick = (hotelId) => {
@@ -261,86 +276,140 @@ const ManageRooms = () => {
 
   return (
     <div className={styles.container}>
-      <h1>Quản lý Phòng & Khách sạn</h1>
-
-      {role === 'Quản lý' && (
-        <div className={styles.actions}>
+    <h1>Quản lý Phòng & Khách sạn</h1>
+  
+    {/* Nút thêm khách sạn chỉ dành cho Quản lý */}
+    {role === 'Quản lý' && (
+      <div className={styles.actions}>
+        <button
+          className={styles.addHotelButton}
+          onClick={() => navigate('/dashboard/add-hotel')}
+        >
+          Thêm Khách Sạn
+        </button>
+      </div>
+    )}
+  
+    {/* Hiển thị danh sách khách sạn và phòng */}
+    {role === 'Quản lý' && hotels.length > 0 ? (
+      hotels.map((hotel) => (
+        <div key={hotel.id} className={styles.hotelSection}>
+          <h2>{hotel['tên khách sạn']}</h2>
+          <p>Địa chỉ: {hotel['địa chỉ khách sạn']}</p>
           <button
-            className={styles.addHotelButton}
-            onClick={() => navigate('/dashboard/add-hotel')}
+            className={styles.editButton}
+            onClick={() => handleEditHotelClick(hotel.id)}
           >
-            Thêm Khách Sạn
+            Sửa
           </button>
-        </div>
-      )}
-
-      {hotels.length > 0 ? (
-        hotels.map((hotel) => (
-          <div key={hotel.id} className={styles.hotelSection}>
-            <h2>{hotel['tên khách sạn']}</h2>
-            <p>Địa chỉ: {hotel['địa chỉ khách sạn']}</p>
-            <button
-              className={styles.editButton}
-              onClick={() => handleEditHotelClick(hotel.id)}
-            >
-              Sửa
-            </button>
-            <button
-              className={styles.addRoomButton}
-              onClick={() => navigate(`/dashboard/add-room/${hotel.id}`)}
-            >
-              Thêm Phòng
-            </button>
-            <button
-              className={styles.deleteButtonH}
-              onClick={() => handleDeleteHotelClick(hotel.id)}
-            >
-              Xóa Khách Sạn
-            </button>
-
-            {rooms[hotel.id]?.length > 0 ? (
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Tên Phòng</th>
-                    <th>Giá</th>
-                    <th>Loại Phòng</th>
-                    <th>Hành Động</th>
+          <button
+            className={styles.addRoomButton}
+            onClick={() => navigate(`/dashboard/add-room/${hotel.id}`)}
+          >
+            Thêm Phòng
+          </button>
+          <button
+            className={styles.deleteButtonH}
+            onClick={() => handleDeleteHotelClick(hotel.id)}
+          >
+            Xóa Khách Sạn
+          </button>
+  
+          {rooms[hotel.id]?.length > 0 ? (
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Tên Phòng</th>
+                  <th>Giá</th>
+                  <th>Loại Phòng</th>
+                  <th>Hành Động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rooms[hotel.id].map((room) => (
+                  <tr key={room.RoomId}>
+                    <td>{room.RoomName}</td>
+                    <td>{parseFloat(room.Price).toLocaleString()} VND</td>
+                    <td>{room.RoomType}</td>
+                    <td>
+                      <button
+                        className={styles.editButton}
+                        onClick={() => handleEditRoomClick(room)}
+                      >
+                        Sửa
+                      </button>
+                      <button
+                        className={styles.deleteButton}
+                        onClick={() =>
+                          handleDeleteRoomClick(room.RoomId, hotel.id)
+                        }
+                      >
+                        Xóa
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {rooms[hotel.id].map((room) => (
-                    <tr key={room.RoomId}>
-                      <td>{room.RoomName}</td>
-                      <td>{parseFloat(room.Price).toLocaleString()} VND</td>
-                      <td>{room.RoomType}</td>
-                      <td>
-                        <button
-                          className={styles.editButton}
-                          onClick={() => handleEditRoomClick(room)}
-                        >
-                          Sửa
-                        </button>
-                        <button
-                          className={styles.deleteButton}
-                          onClick={() => handleDeleteRoomClick(room.RoomId, hotel.id)}
-                        >
-                          Xóa
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <p>Không có phòng trong khách sạn này.</p>
-            )}
-          </div>
-        ))
-      ) : (
-        <p>Không có khách sạn nào để hiển thị.</p>
-      )}
-
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p>Không có phòng trong khách sạn này.</p>
+          )}
+        </div>
+      ))
+    ) : role === 'Nhân viên' && Object.keys(rooms).length > 0 ? (
+      <div className={styles.hotelSection}>
+        <h2>Phòng của khách sạn ID: {Object.keys(rooms)[0]}</h2>
+  
+        <button
+          className={styles.addRoomButton}
+          onClick={() =>
+            navigate(`/dashboard/add-room/${Object.keys(rooms)[0]}`)
+          }
+        >
+          Thêm Phòng
+        </button>
+  
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Tên Phòng</th>
+              <th>Giá</th>
+              <th>Loại Phòng</th>
+              <th>Hành Động</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rooms[Object.keys(rooms)[0]].map((room) => (
+              <tr key={room.RoomId}>
+                <td>{room.RoomName}</td>
+                <td>{parseFloat(room.Price).toLocaleString()} VND</td>
+                <td>{room.RoomType}</td>
+                <td>
+                  <button
+                    className={styles.editButton}
+                    onClick={() => handleEditRoomClick(room)}
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    className={styles.deleteButton}
+                    onClick={() =>
+                      handleDeleteRoomClick(room.RoomId, Object.keys(rooms)[0])
+                    }
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <p>Không có khách sạn hoặc phòng nào để hiển thị.</p>
+    )}
+ 
+  
       {editingRoom && (
         <div className={styles.modal}>
           <div className={styles.modalContent}>

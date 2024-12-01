@@ -11,7 +11,7 @@ const Home = () => {
   return (
     <div className="home-container">
       <Hero className="component-spacing" />
-      {/* <BannerHotel className="component-spacing"/> */}
+       <BannerHotel className="component-spacing"/> 
       <DiaDiem className="component-spacing" />
       <KhachSan className="component-spacing" />
       <LoiIch className="component-spacing" />

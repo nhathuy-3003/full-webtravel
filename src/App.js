@@ -6,8 +6,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Hotels from './pages/Hotels';
 import ChiTietKhachSan from './pages/ChiTiet';
-import LoginForm from './components/LoginForm';
-import RegisterForm from './components/Register';
+
+
 import ForgotPassword from './components/Forgot-ps';
 import PaymentPage from './components/PaymentPage';
 import CheckoutDetail from './components/CheckoutPage';
@@ -48,11 +48,10 @@ const App = () => {
       <Routes>
         {/* Main application routes */}
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
+       
+    
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/hotels" element={<Hotels />} />
-        
         <Route path="/about" element={<AboutPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/checkoutpage" element={<CheckoutDetail />} />

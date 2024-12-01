@@ -113,7 +113,7 @@ const Header = () => {
           </div>
         </div>
         <div className={styles.headerActions}>
-          <Link to="/login">
+          <Link to="/dashboard-login">
             <button className={styles.btnSignUp}>
               <span className="header-sign-up-btn">Sign up</span>
             </button>

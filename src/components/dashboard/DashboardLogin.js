@@ -1,63 +1,89 @@
-// src/components/dashboard/DashboardLogin.js
-
-import React, { useState, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import styles from './DashboardLogin.module.css';
-import { login } from '../../api'; // Hàm login từ api.js
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; // Import style của react-toastify
-
-// Import AuthContext
-import { AuthContext } from '../../AuthContext';
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import styles from "./DashboardLogin.module.css";
+import { login } from "../../api"; // Hàm login từ API
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { AuthContext } from "../../AuthContext";
 
 const DashboardLogin = () => {
   const navigate = useNavigate();
-  const { login: authLogin } = useContext(AuthContext); // Đổi tên để tránh xung đột với hàm login import từ api.js
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { login: authLogin } = useContext(AuthContext); // Hàm login từ AuthContext
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState("Quản lý"); // Vai trò mặc định là "Quản lý"
+  const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Ngăn chặn reload trang khi submit form
+    e.preventDefault();
+
     try {
-      const response = await login(username, password);
+      // Gửi vai trò cùng với thông tin đăng nhập
+      const response = await login(username, password, role);
 
       if (response && response.token) {
-        // Sử dụng hàm login từ AuthContext để lưu token và userData
+        // Kiểm tra vai trò trả về từ API
+        const userRole = response.user?.Role?.trim(); // Lấy vai trò từ API
+        const selectedRole = role.trim(); // Vai trò được chọn từ giao diện
+
+        if (!userRole) {
+          toast.error("Không xác định được vai trò từ API.");
+          console.error("Vai trò từ API:", response);
+          return;
+        }
+
+        // So sánh vai trò giữa API và người dùng chọn
+        if (userRole.toLowerCase() !== selectedRole.toLowerCase()) {
+          toast.error(`Chỉ tài khoản có vai trò "${selectedRole}" mới được đăng nhập!`);
+          return;
+        }
+
+        // Lưu thông tin người dùng và token
         authLogin(response.token, response.user);
 
-        // Thông báo đăng nhập thành công
-        toast.success('Đăng nhập thành công! Đang chuyển hướng...');
+        toast.success("Đăng nhập thành công! Đang chuyển hướng...");
 
-        // Chuyển hướng tới trang dashboard sau khi đăng nhập thành công
+        // Chuyển hướng tới Dashboard sau khi đăng nhập thành công
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500); // Chờ 1.5s để người dùng đọc thông báo
+          navigate("/dashboard");
+        }, 1500);
       } else {
-        setError('Thông tin đăng nhập không đúng.');
-        toast.error('Thông tin đăng nhập không đúng.');
+        toast.error("Thông tin đăng nhập không đúng.");
       }
     } catch (err) {
-      // Kiểm tra lỗi từ API
-      const errorMessage = err.response?.data?.message || err.message || 'Có lỗi xảy ra khi đăng nhập.';
+      const errorMessage =
+        err.response?.data?.message || err.message || "Có lỗi xảy ra.";
       setError(errorMessage);
       toast.error(errorMessage);
-      console.error('Error during login:', err);
     }
-  };
-
-  const handleGoHome = () => {
-    navigate('/');
   };
 
   return (
     <div className={styles.loginContainer}>
+      <div className={styles.roleButtons}>
+        <button
+          className={`${styles.roleButton} ${
+            role === "Quản lý" ? styles.activeRole : ""
+          }`}
+          onClick={() => setRole("Quản lý")}
+        >
+          Đăng nhập với quyền Quản lý
+        </button>
+        <button
+          className={`${styles.roleButton} ${
+            role === "Nhân viên" ? styles.activeRole : ""
+          }`}
+          onClick={() => setRole("Nhân viên")}
+        >
+          Đăng nhập với quyền Nhân viên
+        </button>
+      </div>
+
       <div className={styles.loginBox}>
-        <h2 className={styles.title}>Đăng Nhập Dashboard</h2>
-
-        {/* Hiển thị lỗi nếu có */}
+        <h2 className={styles.title}>
+          Đăng Nhập {role === "Quản lý" ? "Quản lý" : "Nhân viên"}
+        </h2>
         {error && <p className={styles.error}>{error}</p>}
-
         <form onSubmit={handleLogin}>
           <div className={styles.inputGroup}>
             <label htmlFor="username">Tên đăng nhập:</label>
@@ -90,12 +116,8 @@ const DashboardLogin = () => {
           </button>
         </form>
 
-        <button onClick={handleGoHome} className={styles.homeButton}>
-          Về Trang Chủ
-        </button>
+        <ToastContainer />
       </div>
-      {/* Thêm ToastContainer vào để hiển thị các thông báo */}
-      <ToastContainer />
     </div>
   );
 };

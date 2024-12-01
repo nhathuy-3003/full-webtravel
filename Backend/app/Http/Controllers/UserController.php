@@ -217,7 +217,12 @@ class UserController extends Controller
                 'message' => 'Tên đăng nhập hoặc mật khẩu không đúng.',
             ], 401);
         }
-
+ // Kiểm tra vai trò (Role)
+ if ($user->Role !== 'Quản lý' && $user->Role !== 'Nhân viên') {
+    return response()->json([
+        'message' => 'Tài khoản của bạn không có quyền truy cập.',
+    ], 403); // Trả về lỗi 403 nếu vai trò không hợp lệ
+}
         $token = $user->createToken('authToken')->plainTextToken;
 
         return response()->json([
