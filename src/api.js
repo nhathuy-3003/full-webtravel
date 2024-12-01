@@ -788,6 +788,19 @@ export const deleteComment = async (commentId, authToken) => { // Thêm authToke
     throw error;
   }
 };
+export const fetchCommentsByHotelId = async (hotelId, authToken) => {
+  try {
+    const response = await api.get(`/comment/hotel/${hotelId}`, {
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+    return response.data.data || [];
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách bình luận theo HotelId:", error);
+    throw error;
+  }
+};
 
 // Post a new comment
 export const postComment = async (hotelId, comment, authToken) => { // Thêm authToken

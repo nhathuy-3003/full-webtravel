@@ -1,22 +1,45 @@
-import React, { useState, useEffect } from "react";
-import { updateComment, deleteComment, fetchAllComments } from "../../api";
+import React, { useState, useEffect, useContext } from "react";
+import {
+  fetchAllComments,
+  fetchCommentsByHotelId,
+  updateComment,
+  deleteComment,
+  fetchUserSetting,
+} from "../../api";
 import styles from "./ManageComments.module.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { confirmAlert } from "react-confirm-alert";
 import "react-confirm-alert/src/react-confirm-alert.css";
-import LoadingPage from '../../hooks/LoadingPage'; // Import trang chờ
+import LoadingPage from "../../hooks/LoadingPage";
+import { AuthContext } from "../../AuthContext"; // Đảm bảo đường dẫn đúng
+
 const ManageComments = () => {
   const [comments, setComments] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Load danh sách bình luận
+  const { authToken } = useContext(AuthContext);
+
+  // Load danh sách bình luận dựa trên vai trò
   useEffect(() => {
     const loadComments = async () => {
       setLoading(true);
       try {
-        const data = await fetchAllComments();
-        console.log("Dữ liệu bình luận từ API:", data);
+        // Lấy thông tin vai trò và HotelId
+        const user = await fetchUserSetting(authToken);
+    
+
+        let data = [];
+        if (user.Role === "Quản lý") {
+          // Nếu là quản lý, tải tất cả bình luận
+          data = await fetchAllComments(authToken);
+        } else if (user.Role === "Nhân viên" && user.HotelId) {
+          // Nếu là nhân viên, tải bình luận theo HotelId
+          data = await fetchCommentsByHotelId(user.HotelId, authToken);
+        } else {
+          toast.error("Vai trò không xác định hoặc không có quyền.");
+        }
+
         if (!Array.isArray(data)) throw new Error("Dữ liệu không hợp lệ");
         setComments(data);
         toast.success("Tải danh sách bình luận thành công!");
@@ -29,11 +52,7 @@ const ManageComments = () => {
     };
 
     loadComments();
-  }, []);
-
-  useEffect(() => {
-    console.log("Danh sách bình luận:", comments);
-  }, [comments]);
+  }, [authToken]);
 
   // Xử lý duyệt hoặc hủy duyệt bình luận
   const handleApprove = async (commentId, newDisplayStatus) => {
@@ -43,7 +62,7 @@ const ManageComments = () => {
     }
 
     try {
-      await updateComment(commentId, { Display: newDisplayStatus });
+      await updateComment(commentId, { Display: newDisplayStatus }, authToken);
       setComments((prev) =>
         prev.map((comment) =>
           comment.Id === commentId ? { ...comment, Display: newDisplayStatus } : comment
@@ -87,7 +106,7 @@ const ManageComments = () => {
     }
 
     try {
-      await deleteComment(id);
+      await deleteComment(id, authToken);
       setComments((prev) => prev.filter((comment) => comment.Id !== id));
       toast.success("Bình luận đã bị xóa.");
     } catch (error) {
@@ -96,10 +115,10 @@ const ManageComments = () => {
     }
   };
 
-  // Render UI
   if (loading) {
-    return <LoadingPage />; // Hiển thị LoadingPage khi đang tải
+    return <LoadingPage />;
   }
+
   return (
     <div className={styles.container}>
       <ToastContainer />
@@ -130,9 +149,13 @@ const ManageComments = () => {
                 <td>{comment.Display === 1 ? "Hiển Thị" : "Chờ Duyệt"}</td>
                 <td>
                   {comment.Display === 0 ? (
-                    <button onClick={() => handleApprove(comment.Id, 1)}>Duyệt</button>
+                    <button onClick={() => handleApprove(comment.Id, 1)}>
+                      Duyệt
+                    </button>
                   ) : (
-                    <button onClick={() => handleApprove(comment.Id, 0)}>Hủy Duyệt</button>
+                    <button onClick={() => handleApprove(comment.Id, 0)}>
+                      Hủy Duyệt
+                    </button>
                   )}
                   <button
                     className={styles.deleteButton}
