@@ -33,7 +33,7 @@ class BookingController extends Controller
             'OrderDate' => 'required|date',
             'DateIn' => 'required|date|after_or_equal:OrderDate',
             'DateOut' => 'required|date|after:DateIn',
-            'BookingPaymentMethod' => 'required|string|in:momo,credit',
+            'BookingPaymentMethod' => 'required|string|in:vnpay',
             'BookingTotalAmount' => 'required|numeric|min:0',
         ], [
             'HotelId.exists' => 'Khách sạn không hợp lệ.',
@@ -115,23 +115,83 @@ $customer = CustomerModel::create([
             \Mail::to($managerEmail)->send(new \App\Mail\BookingManagerNotification($managerEmailDetails));
             Log::info('Email thông báo đến quản lý đã được gửi.');
 
-            DB::commit();
+            // Kiểm tra nếu phương thức thanh toán là VNPay, xử lý thanh toán VNPay
+if ($request->BookingPaymentMethod === 'vnpay') {
+    $vnp_Url = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    $vnp_Returnurl = "https://full-webtravel.vercel.app/payment-result";
+    $vnp_TmnCode = "RVACBM44";// Mã website tại VNPAY 
+    $vnp_HashSecret = "3AXTXTK1L84YUMD9SMH3HAUO5MMEQOD6"; // Chuỗi bí mật
 
-            return response()->json([
-                'message' => 'Thêm booking và customer thành công. Email đã được gửi.',
-                'data' => $booking,
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Có lỗi xảy ra khi thêm booking: ' . $e->getMessage());
+    $vnp_TxnRef = $booking->BookingId; // Mã đơn hàng
+    $vnp_OrderInfo = "Thanh toán booking ID " . $booking->BookingId;
+    $vnp_Amount = $booking->BookingTotalAmount * 100; // Đảm bảo số tiền chuyển sang VND
+    $vnp_Locale = 'vn'; // Ngôn ngữ là tiếng Việt
+    $vnp_IpAddr = $_SERVER['REMOTE_ADDR'];
+    $vnp_ExpireDate = date('YmdHis', strtotime("+1 hour"));
 
-            return response()->json([
-                'message' => 'Có lỗi xảy ra khi thêm booking.',
-                'error' => $e->getMessage(),
-            ], 500);
+    $inputData = [
+        "vnp_Version" => "2.1.0",
+        "vnp_TmnCode" => $vnp_TmnCode,
+        "vnp_Amount" => $vnp_Amount,
+        "vnp_Command" => "pay",
+        "vnp_CreateDate" => date('YmdHis'),
+        "vnp_CurrCode" => "VND",
+        "vnp_IpAddr" => $vnp_IpAddr,
+        "vnp_Locale" => $vnp_Locale,
+        "vnp_OrderInfo" => $vnp_OrderInfo,
+        "vnp_TxnRef" => $vnp_TxnRef,
+        "vnp_ExpireDate" => $vnp_ExpireDate,
+        "vnp_ReturnUrl" => $vnp_Returnurl,
+    ];
+
+    ksort($inputData);
+    $query = "";
+    $hashdata = "";
+    $i = 0;
+
+    foreach ($inputData as $key => $value) {
+        if ($i == 1) {
+            $hashdata .= '&' . urlencode($key) . "=" . urlencode($value);
+        } else {
+            $hashdata .= urlencode($key) . "=" . urlencode($value);
+            $i = 1;
         }
-        Cache::forget('booking');
+        $query .= urlencode($key) . "=" . urlencode($value) . '&';
     }
+
+    $vnp_Url = $vnp_Url . "?" . $query;
+    if (isset($vnp_HashSecret)) {
+        $vnpSecureHash = hash_hmac('sha512', $hashdata, $vnp_HashSecret); 
+        $vnp_Url .= 'vnp_SecureHash=' . $vnpSecureHash;
+    }
+
+    // Trả về URL VNPay dưới dạng JSON
+    DB::commit();
+
+    return response()->json([
+        'message' => 'Đặt phòng thành công. Chuyển hướng đến VNPay để thanh toán.',
+        'payment_url' => $vnp_Url,
+        'data' => $booking,
+    ], 201);
+}
+
+DB::commit();
+
+return response()->json([
+    'message' => 'Thêm booking và customer thành công. Email đã được gửi.',
+    'data' => $booking,
+], 201);
+} catch (\Exception $e) {
+DB::rollBack();
+Log::error('Có lỗi xảy ra khi thêm booking: ' . $e->getMessage());
+
+return response()->json([
+    'message' => 'Có lỗi xảy ra khi thêm booking.',
+    'error' => $e->getMessage(),
+], 500);
+}
+Cache::forget('booking');
+}
 
     public function show(BookingModel $booking)
     {
@@ -153,7 +213,7 @@ $customer = CustomerModel::create([
             'OrderDate' => 'sometimes|date',
             'DateIn' => 'sometimes|date|after_or_equal:OrderDate',
             'DateOut' => 'sometimes|date|after:DateIn',
-            'BookingPaymentMethod' => 'sometimes|string|in:momo,credit',
+            'BookingPaymentMethod' => 'required|string|in:vnpay',
             'BookingTotalAmount' => 'sometimes|numeric|min:0',
             'BookingStatus' => 'sometimes|string|in:Pending,Confirmed,Cancelled',
         ], [
@@ -302,6 +362,64 @@ public function resendConfirmationEmail($bookingId)
         ], 500);
     }
 }
+//xử lý API từ VNPay và gửi thông báo qua email.
+public function vnpayReturn(Request $request)
+{
+    $vnp_HashSecret = "3AXTXTK1L84YUMD9SMH3HAUO5MMEQOD6"; // Chuỗi bí mật do VNPay cung cấp
+    $vnp_TxnRef = $request->vnp_TxnRef; // Mã đơn hàng
+    $vnp_SecureHash = $request->vnp_SecureHash; // Mã hash bảo mật
+    $inputData = $request->except('vnp_SecureHash'); // Lấy tất cả tham số từ VNPay ngoại trừ vnp_SecureHash
+
+    // Sắp xếp lại dữ liệu để tạo lại chuỗi cần thiết
+    ksort($inputData);
+    $hashData = '';
+    foreach ($inputData as $key => $value) {
+        if ($key != 'vnp_SecureHash' && $value != '') {
+            $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+        }
+    }
+    $hashData = substr($hashData, 1); // Cắt dấu & đầu tiên
+
+    // Tính lại mã hash từ dữ liệu nhận được và so sánh với mã hash từ VNPay
+    $secureHash = hash_hmac('sha512', $hashData, $vnp_HashSecret);
+    
+    // Kiểm tra chữ ký bảo mật
+    if ($secureHash != $vnp_SecureHash) {
+        Log::error('VNPay payment: Invalid secure hash');
+        return response()->json(['message' => 'Chữ ký không hợp lệ'], 400);
+    }
+
+    // Kiểm tra mã phản hồi từ VNPay
+    if ($request->vnp_ResponseCode == '00') {
+        // Thanh toán thành công
+        $booking = BookingModel::where('BookingId', $vnp_TxnRef)->first();
+        if ($booking) {
+            // Cập nhật trạng thái booking thành "Đã thanh toán"
+            $booking->BookingStatus = 'Confirmed';
+            $booking->save();
+
+            // Gửi email thông báo thanh toán thành công cho khách hàng và quản lý
+            $this->sendPaymentSuccessEmail($booking);
+
+            Log::info("Thanh toán thành công cho booking ID: {$vnp_TxnRef}");
+            return redirect()->route('booking.success');
+        }
+    } else {
+        // Thanh toán thất bại
+        Log::error("Thanh toán thất bại cho booking ID: {$vnp_TxnRef}");
+        return redirect()->route('booking.failed');
+    }
+}
+
+private function sendPaymentSuccessEmail($booking)
+{
+    // Gửi email thông báo thanh toán thành công cho khách hàng
+    \Mail::to($booking->customer->CustomerEmail)->send(new \App\Mail\PaymentSuccessNotification($booking));
+
+    // Gửi email thông báo thanh toán thành công cho quản lý
+    \Mail::to('huyladay123@gmail.com')->send(new \App\Mail\PaymentManagerNotification($booking));
+}
+
 }
 
 

@@ -36,6 +36,7 @@ import ManageComments from './components/dashboard/ManageComments';
 // Import AuthProvider
 import { AuthProvider } from './AuthContext';
 import NotAuthorized from './hooks/NotAuthorized';
+import PaymentResult from './components/PaymentResult';
 
 const App = () => { 
   useScrollToTop();
@@ -49,7 +50,7 @@ const App = () => {
         {/* Main application routes */}
         <Route path="/" element={<Home />} />
        
-    
+        <Route path="/payment-result" element={<PaymentResult/>} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/hotels" element={<Hotels />} />
         <Route path="/about" element={<AboutPage />} />

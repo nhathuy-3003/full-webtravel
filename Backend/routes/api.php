@@ -62,8 +62,13 @@ Route::get('/room/{roomId}/images', [RoomController::class, 'getRoomImages']);
 
 // ** Khúc này của bảng booking
 Route::apiResource('booking', BookingController::class);
+// route
+
+
+Route::post('/vnpay_return', [BookingController::class, 'handleVnPayReturn']);
 
 // Route để lấy tất cả booking của một khách sạn
+
 Route::get('/hotel/{hotelId}/bookings', [BookingController::class, 'getBookingsByHotel']);
 
 

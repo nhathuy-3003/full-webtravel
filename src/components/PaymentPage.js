@@ -4,7 +4,7 @@ import axios from 'axios';
 import styles from './PaymentPage.module.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaCcVisa, FaCcMastercard, FaUserFriends } from 'react-icons/fa';
+import { FaUserFriends } from 'react-icons/fa';
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -28,15 +28,14 @@ const PaymentPage = () => {
   const checkOutDate = checkOutDateStr ? new Date(checkOutDateStr) : null;
   const orderDate = new Date();
 
-  const [paymentMethod, setPaymentMethod] = useState('');
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
 
   const validateInput = () => {
-    if (!fullName || !email || !phoneNumber || !paymentMethod) {
-      toast.error('Vui lòng điền đầy đủ thông tin và chọn phương thức thanh toán!');
+    if (!fullName || !email || !phoneNumber) {
+      toast.error('Vui lòng điền đầy đủ thông tin!');
       return false;
     }
 
@@ -67,7 +66,7 @@ const PaymentPage = () => {
       DateIn: checkInDate ? checkInDate.toISOString().split('T')[0] : null,
       DateOut: checkOutDate ? checkOutDate.toISOString().split('T')[0] : null,
       BookingOrderType: 'Online',
-      BookingPaymentMethod: paymentMethod,
+      BookingPaymentMethod: 'vnpay', // Đặt phương thức thanh toán là 'vnpay'
       BookingTotalAmount: Number(price),
       CustomerName: fullName,
       CustomerPhone: phoneNumber,
@@ -79,24 +78,30 @@ const PaymentPage = () => {
       console.log('Payload gửi đi:', payload);
       const response = await axios.post('http://127.0.0.1:8000/api/booking', payload);
 
-      toast.success('Đặt phòng thành công!');
-      console.log('Đặt phòng thành công:', response.data);
+      if (response.data.payment_url) {
+        // Chuyển hướng tới URL thanh toán VNPay
+        window.location.href = response.data.payment_url;
+      } else {
+        // Nếu không có URL thanh toán, thông báo thành công và chuyển hướng
+        toast.success('Đặt phòng thành công!');
+        console.log('Đặt phòng thành công:', response.data);
 
-      navigate('/checkoutpage', {
-        state: {
-          hotelName,
-          roomName,
-          roomImage,
-          price,
-          checkInDate,
-          checkOutDate,
-          adults,
-          children,
-          hotelId,
-          roomId,
-          roomAmenities,
-        },
-      });
+        navigate('/checkoutpage', {
+          state: {
+            hotelName,
+            roomName,
+            roomImage,
+            price,
+            checkInDate,
+            checkOutDate,
+            adults,
+            children,
+            hotelId,
+            roomId,
+            roomAmenities,
+          },
+        });
+      }
     } catch (error) {
       console.error('Lỗi khi đặt phòng:', error);
 
@@ -150,17 +155,12 @@ const PaymentPage = () => {
         <div className={styles.paymentMethod}>
           <h3>Phương thức thanh toán</h3>
           <div className={styles.paymentOptions}>
+            {/* Chỉ giữ lại VNPay và áp dụng luôn lớp active */}
             <button
-              className={`${styles.paymentButton} ${paymentMethod === 'momo' ? styles.active : ''}`}
-              onClick={() => setPaymentMethod('momo')}
+              className={`${styles.paymentButton} ${styles.active}`}
+              disabled
             >
-              Momo
-            </button>
-            <button
-              className={`${styles.paymentButton} ${paymentMethod === 'credit' ? styles.active : ''}`}
-              onClick={() => setPaymentMethod('credit')}
-            >
-              <FaCcVisa /> <FaCcMastercard /> Thẻ ngân hàng
+              VNPay
             </button>
           </div>
         </div>
@@ -169,7 +169,7 @@ const PaymentPage = () => {
           <p>Đang xử lý thanh toán...</p>
         ) : (
           <button className={styles.confirmBtn} onClick={handleConfirmPayment}>
-            Xác nhận và thanh toán
+            Xác nhận và thanh toán bằng VNPay
           </button>
         )}
       </div>
