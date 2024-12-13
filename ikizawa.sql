@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 24, 2024 lúc 08:20 AM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- Máy chủ: localhost:8889
+-- Thời gian đã tạo: Th12 13, 2024 lúc 02:49 PM
+-- Phiên bản máy phục vụ: 8.0.35
+-- Phiên bản PHP: 8.3.9
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `ikizawa`
+-- Cơ sở dữ liệu: `ikiZawa`
 --
 
 -- --------------------------------------------------------
@@ -28,9 +28,9 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `amenities` (
-  `AmenityId` int(11) NOT NULL,
-  `AmenityName` varchar(100) NOT NULL,
-  `AmenityIcon` varchar(255) DEFAULT NULL,
+  `AmenityId` int NOT NULL,
+  `AmenityName` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `AmenityIcon` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -41,7 +41,8 @@ CREATE TABLE `amenities` (
 
 INSERT INTO `amenities` (`AmenityId`, `AmenityName`, `AmenityIcon`, `created_at`, `updated_at`) VALUES
 (1, 'Wifi', 'amenity_icons/3ZdrVqLAigabcuHq0vCqb9bXA50raOWSA2aUqOhv.png', '2024-11-19 11:23:21', '2024-11-19 11:23:21'),
-(2, 'Wifi', 'amenity_icons/83KayJdlPTxhYX9HMvl0YGgLOT2ycRyiHTyxftE3.png', '2024-11-19 11:58:29', '2024-11-19 11:58:29');
+(3, 'Hồ Bơi', 'amenity_icons/nqDeyjw3ts8GECZvlSEeaAF0pugtYvooqKaHinpu.png', '2024-11-25 00:33:00', '2024-11-25 00:33:00'),
+(4, 'Phòng Tắm', 'amenity_icons/YPbQAw3cUhElJ0Oh3y7RwHEekGYsACOZ1ZeUayU8.png', '2024-11-25 00:36:36', '2024-11-25 00:36:36');
 
 -- --------------------------------------------------------
 
@@ -50,18 +51,18 @@ INSERT INTO `amenities` (`AmenityId`, `AmenityName`, `AmenityIcon`, `created_at`
 --
 
 CREATE TABLE `booking` (
-  `BookingId` int(11) NOT NULL,
-  `CustomerId` int(11) NOT NULL,
-  `HotelId` int(11) NOT NULL,
-  `RoomId` int(11) NOT NULL,
+  `BookingId` int NOT NULL,
+  `CustomerId` int NOT NULL,
+  `HotelId` int NOT NULL,
+  `RoomId` int NOT NULL,
   `OrderDate` datetime NOT NULL COMMENT 'Ngày đặt phòng',
   `DateIn` date NOT NULL COMMENT 'Ngày bắt đầu ở',
   `DateOut` date NOT NULL COMMENT 'Ngày trả phòng',
-  `BookingPaymentMethod` enum('momo','credit') NOT NULL DEFAULT 'momo',
-  `BookingTotalAmount` decimal(10,2) NOT NULL DEFAULT 0.00 COMMENT 'Tổng giá trị của booking',
-  `BookingStatus` enum('Pending','Confirmed','Cancelled') NOT NULL DEFAULT 'Pending' COMMENT 'Trạng thái booking',
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `BookingPaymentMethod` enum('momo','credit') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'momo',
+  `BookingTotalAmount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Tổng giá trị của booking',
+  `BookingStatus` enum('Pending','Confirmed','Cancelled') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Pending' COMMENT 'Trạng thái booking',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -69,9 +70,9 @@ CREATE TABLE `booking` (
 --
 
 INSERT INTO `booking` (`BookingId`, `CustomerId`, `HotelId`, `RoomId`, `OrderDate`, `DateIn`, `DateOut`, `BookingPaymentMethod`, `BookingTotalAmount`, `BookingStatus`, `created_at`, `updated_at`) VALUES
-(2, 15, 33, 14, '2024-11-22 00:00:00', '2024-11-22', '2024-11-23', 'momo', 300000.00, 'Cancelled', '2024-11-22 02:46:22', '2024-11-23 07:44:51'),
-(3, 16, 1, 6, '2024-11-22 00:00:00', '2024-11-23', '2024-11-29', 'momo', 1200000.00, 'Cancelled', '2024-11-22 02:51:05', '2024-11-23 07:22:12'),
-(5, 21, 33, 14, '2024-11-22 00:00:00', '2024-11-22', '2024-11-29', 'momo', 2100000.00, 'Pending', '2024-11-22 02:55:53', '2024-11-22 02:55:53');
+(2, 15, 33, 14, '2024-10-22 00:00:00', '2024-11-22', '2024-11-23', 'momo', 300000.00, 'Confirmed', '2024-11-22 02:46:22', '2024-11-28 11:35:46'),
+(3, 16, 1, 6, '2024-11-22 00:00:00', '2024-11-23', '2024-11-29', 'momo', 1200000.00, 'Confirmed', '2024-11-22 02:51:05', '2024-11-25 08:20:13'),
+(5, 21, 33, 14, '2024-11-22 00:00:00', '2024-11-22', '2024-11-29', 'momo', 2100000.00, 'Confirmed', '2024-11-22 02:55:53', '2024-11-28 04:26:39');
 
 -- --------------------------------------------------------
 
@@ -80,13 +81,13 @@ INSERT INTO `booking` (`BookingId`, `CustomerId`, `HotelId`, `RoomId`, `OrderDat
 --
 
 CREATE TABLE `comment` (
-  `CommentId` int(11) NOT NULL,
-  `HotelId` int(11) NOT NULL,
-  `CustomerName` varchar(25) NOT NULL,
-  `Email` varchar(255) NOT NULL,
-  `Content` text NOT NULL,
-  `Display` bit(1) NOT NULL DEFAULT b'0' COMMENT '0 là không hiển thị, 1 là hiển thị bình luận',
-  `Rating` tinyint(4) NOT NULL
+  `CommentId` int NOT NULL,
+  `HotelId` int NOT NULL,
+  `CustomerName` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
+  `Email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `Content` text COLLATE utf8mb4_general_ci NOT NULL,
+  `Display` bit(1) NOT NULL DEFAULT b'1' COMMENT '0 là không hiển thị, 1 là hiển thị bình luận',
+  `Rating` tinyint NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -94,8 +95,10 @@ CREATE TABLE `comment` (
 --
 
 INSERT INTO `comment` (`CommentId`, `HotelId`, `CustomerName`, `Email`, `Content`, `Display`, `Rating`) VALUES
-(1, 6, '', 'baokhuong6996@gmail.com', 'khách sạm này vip quá', b'0', 5),
-(2, 3, '', 'baokhuong6996@gmail.com', 'dm như l*', b'0', 1);
+(1, 6, 'huy', 'baokhuong6996@gmail.com', 'khách sạm này vip quá', b'1', 5),
+(5, 1, 'Nguyen Van A', 'example@gmail.com', 'Khách sạn tuyệt vời', b'1', 5),
+(7, 6, '1231', 'huyladay123@gmail.com', '12412', b'1', 5),
+(11, 1, 'nguyễn tri bảo ngọc', 'bao@gmail.com', 'khách sạn vl thật', b'1', 3);
 
 -- --------------------------------------------------------
 
@@ -104,13 +107,13 @@ INSERT INTO `comment` (`CommentId`, `HotelId`, `CustomerName`, `Email`, `Content
 --
 
 CREATE TABLE `customers` (
-  `CustomerId` int(11) NOT NULL,
-  `CustomerName` varchar(255) NOT NULL,
-  `CustomerPhone` varchar(15) NOT NULL,
-  `CustomerEmail` varchar(255) NOT NULL,
-  `CustomerAddress` varchar(255) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `CustomerId` int NOT NULL,
+  `CustomerName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `CustomerPhone` varchar(15) COLLATE utf8mb4_general_ci NOT NULL,
+  `CustomerEmail` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `CustomerAddress` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -129,13 +132,13 @@ INSERT INTO `customers` (`CustomerId`, `CustomerName`, `CustomerPhone`, `Custome
 --
 
 CREATE TABLE `hotel` (
-  `HotelId` int(11) NOT NULL,
-  `HotelName` varchar(255) NOT NULL,
-  `HotelAddress` varchar(255) NOT NULL,
+  `HotelId` int NOT NULL,
+  `HotelName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `HotelAddress` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `OpenDay` date NOT NULL,
   `HotelStatus` bit(1) NOT NULL DEFAULT b'1' COMMENT '1 là còn hoạt động, 0 là đóng cửa',
-  `locationDistrictId` int(11) NOT NULL,
-  `locationCityId` int(11) DEFAULT NULL,
+  `locationDistrictId` int NOT NULL,
+  `locationCityId` int DEFAULT NULL,
   `availableFrom` date DEFAULT NULL,
   `availableTo` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -153,10 +156,11 @@ INSERT INTO `hotel` (`HotelId`, `HotelName`, `HotelAddress`, `OpenDay`, `HotelSt
 (6, 'Khách Sạn Thiên Đường Đã Fix', '22/5 quốc lộ 10', '2024-11-01', b'0', 5, 58, NULL, NULL, '2024-11-01 12:29:15', '2024-11-01 12:41:03'),
 (7, 'Khách sạn thiên đường', 'quốc lộ 1', '2021-11-17', b'1', 17, 58, NULL, NULL, NULL, NULL),
 (8, 'Khách sạn tung tăng', 'quốc lộ 1', '2021-11-17', b'1', 17, 58, NULL, NULL, '2024-11-17 14:30:58', '2024-11-17 14:30:58'),
-(25, 'Cozrum Lux Hotel', '19C Bùi Thị Xuân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh, Việt Nam, 700000', '2024-11-20', b'1', 1, 58, NULL, NULL, '2024-11-19 21:43:46', '2024-11-19 21:43:46'),
-(26, 'The One Premium Hotel', '29 Thủ Khoa Huân, Phường Bến Thành, Quận 1, Thành phố Hồ Chí Minh, Việt Nam, 700000', '2024-11-21', b'1', 1, 58, NULL, NULL, '2024-11-19 22:31:21', '2024-11-19 22:31:21'),
-(27, 'My Villa Airport Hotel', '54/34 Bạch Đằng, Phường 2, Quận Tân Bình, Thành phố Hồ Chí Minh, Việt Nam', '2024-11-20', b'1', 13, 58, NULL, NULL, '2024-11-19 22:41:22', '2024-11-19 22:41:22'),
-(33, 'Khách Sạn La Paix Saigon Boutique', '59 Hai Bà Trưng, Bến Nghé, Quận 1, Thành phố Hồ Chí Minh, Việt Nam, 700000', '2024-11-20', b'1', 1, 58, NULL, NULL, '2024-11-19 23:04:08', '2024-11-19 23:04:08');
+(25, 'Cozrum Lux Hotel', '19C Bùi Thị Xuân, Phường Bến Thành', '2024-11-20', b'1', 1, 58, NULL, NULL, '2024-11-19 21:43:46', '2024-11-24 19:49:42'),
+(26, 'The One Premium Hotel', '29 Thủ Khoa Huân, Phường Bến Thành', '2024-11-21', b'1', 1, 58, NULL, NULL, '2024-11-19 22:31:21', '2024-11-24 19:50:11'),
+(27, 'My Villa Airport Hotel', '54/34 Bạch Đằng, Phường 2', '2024-11-20', b'1', 13, 58, NULL, NULL, '2024-11-19 22:41:22', '2024-11-24 19:49:53'),
+(33, 'Khách Sạn La Paix Saigon Boutique', '59 Hai Bà Trưng, Bến Nghé', '2024-11-20', b'1', 1, 58, NULL, NULL, '2024-11-19 23:04:08', '2024-11-24 19:49:14'),
+(35, 'khách sạn bảo ngọc', '872 đường số 20', '2024-11-07', b'1', 15, 58, NULL, NULL, '2024-11-26 17:36:15', '2024-11-26 17:36:15');
 
 -- --------------------------------------------------------
 
@@ -165,10 +169,10 @@ INSERT INTO `hotel` (`HotelId`, `HotelName`, `HotelAddress`, `OpenDay`, `HotelSt
 --
 
 CREATE TABLE `hotelimage` (
-  `HotelImageId` int(11) NOT NULL,
-  `HotelId` int(11) NOT NULL,
-  `ImageUrl` varchar(255) NOT NULL,
-  `HotelImageDescription` varchar(100) NOT NULL,
+  `HotelImageId` int NOT NULL,
+  `HotelId` int NOT NULL,
+  `ImageUrl` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `HotelImageDescription` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -231,9 +235,9 @@ INSERT INTO `hotelimage` (`HotelImageId`, `HotelId`, `ImageUrl`, `HotelImageDesc
 --
 
 CREATE TABLE `hotel_amenities` (
-  `HotelAmenityId` int(11) NOT NULL,
-  `HotelId` int(11) NOT NULL,
-  `AmenityId` int(11) NOT NULL
+  `HotelAmenityId` int NOT NULL,
+  `HotelId` int NOT NULL,
+  `AmenityId` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -241,14 +245,13 @@ CREATE TABLE `hotel_amenities` (
 --
 
 INSERT INTO `hotel_amenities` (`HotelAmenityId`, `HotelId`, `AmenityId`) VALUES
-(1, 1, 1),
-(2, 1, 1),
 (3, 2, 1),
 (8, 33, 1),
-(9, 33, 2),
 (12, 3, 1),
-(13, 3, 2),
-(15, 1, 2);
+(17, 1, 3),
+(19, 35, 1),
+(20, 35, 4),
+(21, 35, 3);
 
 -- --------------------------------------------------------
 
@@ -257,8 +260,8 @@ INSERT INTO `hotel_amenities` (`HotelAmenityId`, `HotelId`, `AmenityId`) VALUES
 --
 
 CREATE TABLE `location_city` (
-  `locationCityId` int(11) NOT NULL,
-  `locationCityName` varchar(50) NOT NULL,
+  `locationCityId` int NOT NULL,
+  `locationCityName` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -339,9 +342,9 @@ INSERT INTO `location_city` (`locationCityId`, `locationCityName`, `created_at`,
 --
 
 CREATE TABLE `location_district` (
-  `locationDistrictId` int(11) NOT NULL,
-  `locationDistrictName` varchar(50) NOT NULL,
-  `locationCityId` int(11) NOT NULL,
+  `locationDistrictId` int NOT NULL,
+  `locationDistrictName` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `locationCityId` int NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -388,9 +391,9 @@ INSERT INTO `location_district` (`locationDistrictId`, `locationDistrictName`, `
 --
 
 CREATE TABLE `migrations` (
-  `id` int(10) UNSIGNED NOT NULL,
-  `migration` varchar(255) NOT NULL,
-  `batch` int(11) NOT NULL
+  `id` int UNSIGNED NOT NULL,
+  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `batch` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -414,12 +417,12 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 --
 
 CREATE TABLE `personal_access_tokens` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `tokenable_type` varchar(255) NOT NULL,
-  `tokenable_id` bigint(20) UNSIGNED NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `token` varchar(64) NOT NULL,
-  `abilities` text DEFAULT NULL,
+  `id` bigint UNSIGNED NOT NULL,
+  `tokenable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_id` bigint UNSIGNED NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `abilities` text COLLATE utf8mb4_unicode_ci,
   `last_used_at` timestamp NULL DEFAULT NULL,
   `expires_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -473,7 +476,32 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 (41, 'App\\Models\\UserModel', 6, 'authToken', '4f90810807ebf8d363c1c02d70c3c7ca561da74d154cefc1c4f39d9c21c02968', '[\"*\"]', NULL, NULL, '2024-11-24 00:06:34', '2024-11-24 00:06:34'),
 (42, 'App\\Models\\UserModel', 6, 'authToken', '7faf5931c8a733f02e688b2cc9ad72740d43d75a124257aff192c3072bd013e7', '[\"*\"]', NULL, NULL, '2024-11-24 00:08:02', '2024-11-24 00:08:02'),
 (43, 'App\\Models\\UserModel', 6, 'authToken', '8deb1414be06a5afc86742e5ebfbd7f158ea2a3bdaa1e97c420e7c0224016827', '[\"*\"]', NULL, NULL, '2024-11-24 00:08:13', '2024-11-24 00:08:13'),
-(44, 'App\\Models\\UserModel', 6, 'authToken', '3cdd470f3d91f05c14bd47cd72508c902059d2d72e25a60f586230ad27625c76', '[\"*\"]', NULL, NULL, '2024-11-24 00:12:48', '2024-11-24 00:12:48');
+(44, 'App\\Models\\UserModel', 6, 'authToken', '3cdd470f3d91f05c14bd47cd72508c902059d2d72e25a60f586230ad27625c76', '[\"*\"]', NULL, NULL, '2024-11-24 00:12:48', '2024-11-24 00:12:48'),
+(45, 'App\\Models\\UserModel', 6, 'authToken', '4a32074db59821a6c660778732de597e5a3a649db2b8d38b0a6170948d44dea5', '[\"*\"]', NULL, NULL, '2024-11-24 00:27:28', '2024-11-24 00:27:28'),
+(46, 'App\\Models\\UserModel', 6, 'authToken', 'd27a883bd1964607eeb78eb56164370590ea78f42901558d31799ae70c5cfd6b', '[\"*\"]', NULL, NULL, '2024-11-24 19:47:16', '2024-11-24 19:47:16'),
+(47, 'App\\Models\\UserModel', 6, 'authToken', 'ad76cb1dfd98bb806dfa6a87bfb96dc8354ce8296d803d4a2899e936291656d0', '[\"*\"]', '2024-11-25 02:40:08', NULL, '2024-11-25 02:35:08', '2024-11-25 02:40:08'),
+(48, 'App\\Models\\UserModel', 6, 'authToken', '55d886b5132db290f6048edc6eccd659e0550cf35ffd52f2b53faa933dacadc0', '[\"*\"]', '2024-11-25 02:43:14', NULL, '2024-11-25 02:40:28', '2024-11-25 02:43:14'),
+(49, 'App\\Models\\UserModel', 7, 'authToken', '9b64b16471dda1ab44853299e5715ad7ee0b7cb7e17472251bafa0727ab2931f', '[\"*\"]', NULL, NULL, '2024-11-25 06:44:13', '2024-11-25 06:44:13'),
+(50, 'App\\Models\\UserModel', 7, 'authToken', '6d5b37f6a1522de759fd18ec82c9cbe1a7509b241437253398ef7ce68ef14491', '[\"*\"]', NULL, NULL, '2024-11-25 06:44:55', '2024-11-25 06:44:55'),
+(51, 'App\\Models\\UserModel', 7, 'authToken', '5c5b3c17105d2eadc11303a55531b9c0d0415b053346c73f3f172d3a6946fd3e', '[\"*\"]', NULL, NULL, '2024-11-25 06:50:37', '2024-11-25 06:50:37'),
+(52, 'App\\Models\\UserModel', 7, 'authToken', 'ac1a7e81904e5236aeca27c84efdc6d365729356c2e5e6bc9d14339143fb5084', '[\"*\"]', NULL, NULL, '2024-11-25 06:56:28', '2024-11-25 06:56:28'),
+(53, 'App\\Models\\UserModel', 7, 'authToken', 'aa7410f97c95917162413b811e21032e2c311689bdb1765044dcc1c23781375a', '[\"*\"]', NULL, NULL, '2024-11-25 07:04:28', '2024-11-25 07:04:28'),
+(54, 'App\\Models\\UserModel', 7, 'authToken', 'd0ff6a55dad7cc497b44193fead156710185e68bf8dd84c0b150aaccbac461b2', '[\"*\"]', NULL, NULL, '2024-11-25 07:10:15', '2024-11-25 07:10:15'),
+(55, 'App\\Models\\UserModel', 7, 'authToken', '2285d29044709735c609d893c966579c1ab79cec7d330345abeaa73b9c493da7', '[\"*\"]', NULL, NULL, '2024-11-25 07:40:23', '2024-11-25 07:40:23'),
+(56, 'App\\Models\\UserModel', 7, 'authToken', 'cad0397bb3a1d3dd2c8cbb90f44867ebdd3256b5ee2e216bd94be2de565889f0', '[\"*\"]', NULL, NULL, '2024-11-25 07:41:46', '2024-11-25 07:41:46'),
+(57, 'App\\Models\\UserModel', 7, 'authToken', '0d485e182325b1dd914be46da005070527954829a004fec16eaa79121fe6aa64', '[\"*\"]', NULL, NULL, '2024-11-25 07:44:28', '2024-11-25 07:44:28'),
+(58, 'App\\Models\\UserModel', 7, 'authToken', '669126074bdd6a1a325f3b6876830ea5f822f4a3936b6fa4f90828d91180a2f0', '[\"*\"]', NULL, NULL, '2024-11-25 08:13:32', '2024-11-25 08:13:32'),
+(59, 'App\\Models\\UserModel', 7, 'authToken', '7964426c262d5d37d0f85dd03c0634447c527c9349fb4704b2fe47cc4c8bf414', '[\"*\"]', NULL, NULL, '2024-11-25 08:13:33', '2024-11-25 08:13:33'),
+(60, 'App\\Models\\UserModel', 7, 'authToken', '5c82e0504ab7f73d7db00a84b5196933a6fad234143f590bb7a85ba96fcfd4be', '[\"*\"]', NULL, NULL, '2024-11-25 08:16:45', '2024-11-25 08:16:45'),
+(61, 'App\\Models\\UserModel', 7, 'authToken', '4bc5455fa5ed025564ed379d21fb0326043162f9286a13616d5c85c6a2614d53', '[\"*\"]', NULL, NULL, '2024-11-25 08:19:24', '2024-11-25 08:19:24'),
+(62, 'App\\Models\\UserModel', 6, 'authToken', '43f4ec57499f222c4214db1e525ade1a230bc4cbbc6bfc64325737c93f0b3b45', '[\"*\"]', NULL, NULL, '2024-11-25 08:20:04', '2024-11-25 08:20:04'),
+(63, 'App\\Models\\UserModel', 8, 'authToken', '581eeed8573cd9acc29346b274c156415809e3fda9360bfdd8d8fe74147271e8', '[\"*\"]', '2024-11-26 17:35:03', NULL, '2024-11-26 17:28:08', '2024-11-26 17:35:03'),
+(64, 'App\\Models\\UserModel', 8, 'authToken', 'a52e7d5e0033eaea042b3e1ec47ac1b813f151286be37f0b3fd53a9b247842ef', '[\"*\"]', '2024-11-28 04:01:15', NULL, '2024-11-26 17:35:18', '2024-11-28 04:01:15'),
+(65, 'App\\Models\\UserModel', 8, 'authToken', 'fbc70d489d784d31ce53bd5a65e169f23ad1b9a6d118b7e2ca16acce074b7f34', '[\"*\"]', '2024-11-28 04:25:30', NULL, '2024-11-28 04:01:23', '2024-11-28 04:25:30'),
+(66, 'App\\Models\\UserModel', 8, 'authToken', 'd9128eed965eded2bd3e36028f400db03ba79d500ab5f705f67d68af0dc85a4d', '[\"*\"]', '2024-12-04 05:27:10', NULL, '2024-11-28 06:24:48', '2024-12-04 05:27:10'),
+(67, 'App\\Models\\UserModel', 8, 'authToken', '572a34d22234d0a3585371aec910586018fc06941cf8e77d6e4cabee54eaef15', '[\"*\"]', '2024-12-04 05:29:24', NULL, '2024-12-04 05:27:59', '2024-12-04 05:29:24'),
+(68, 'App\\Models\\UserModel', 8, 'authToken', 'd314410d785139f78e5d9bc478365907c47282263f107eb17e2d325acd3bb566', '[\"*\"]', '2024-12-04 05:29:53', NULL, '2024-12-04 05:29:42', '2024-12-04 05:29:53'),
+(69, 'App\\Models\\UserModel', 8, 'authToken', 'ee744c8301750519249eab3dde443cd38a580cf5f3f4f858718faecc38c4ac63', '[\"*\"]', '2024-12-04 05:32:46', NULL, '2024-12-04 05:32:46', '2024-12-04 05:32:46');
 
 -- --------------------------------------------------------
 
@@ -482,14 +510,14 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 --
 
 CREATE TABLE `room` (
-  `RoomId` int(11) NOT NULL,
-  `RoomName` varchar(64) NOT NULL,
-  `HotelId` int(11) NOT NULL,
-  `RoomType` varchar(30) NOT NULL COMMENT 'Kiểu phòng VD: Phòng Vip, Đơn, Đôi',
-  `RoomStatus` varchar(30) NOT NULL COMMENT 'Trạng thái phòng như: Trống, Đã Đặt, Đang sử dụng, dọn dẹp, bảo trì',
-  `Description` text NOT NULL COMMENT 'Mô tả phòng',
-  `MaxCustomer` int(11) NOT NULL DEFAULT 1 COMMENT 'Số khách tối đa trong 1 phòng',
-  `Price` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `RoomId` int NOT NULL,
+  `RoomName` varchar(64) COLLATE utf8mb4_general_ci NOT NULL,
+  `HotelId` int NOT NULL,
+  `RoomType` varchar(30) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Kiểu phòng VD: Phòng Vip, Đơn, Đôi',
+  `RoomStatus` varchar(30) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Trạng thái phòng như: Trống, Đã Đặt, Đang sử dụng, dọn dẹp, bảo trì',
+  `Description` text COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Mô tả phòng',
+  `MaxCustomer` int NOT NULL DEFAULT '1' COMMENT 'Số khách tối đa trong 1 phòng',
+  `Price` decimal(10,2) NOT NULL DEFAULT '0.00',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -506,7 +534,8 @@ INSERT INTO `room` (`RoomId`, `RoomName`, `HotelId`, `RoomType`, `RoomStatus`, `
 (10, 'T105', 1, 'Bình thường', 'Trống', 'Phòng này cháy phết', 2, 120000.00, '2024-11-07 13:47:43', '2024-11-07 13:47:43'),
 (13, '107', 1, 'Phòng đôi', 'Trống', 'ádáe213214', 2, 500000.00, '2024-11-20 10:09:24', '2024-11-20 10:09:24'),
 (14, '1', 33, 'Phòng đôi', 'Trống', 'ádfzxczxdáe123', 2, 300000.00, '2024-11-21 08:36:08', '2024-11-21 08:36:08'),
-(17, '101', 27, 'Phòng đôi', 'Trống', 'zsdáewq312412', 2, 300000.00, '2024-11-22 00:13:33', '2024-11-22 00:13:33');
+(17, '101', 27, 'Phòng đôi', 'Trống', 'zsdáewq312412', 2, 300000.00, '2024-11-22 00:13:33', '2024-11-22 00:13:33'),
+(18, 'T101', 35, 'Vip', 'Chưa đặt', 'siuuuuuuu', 2, 200000.00, '2024-11-26 17:37:03', '2024-11-26 17:37:03');
 
 -- --------------------------------------------------------
 
@@ -515,10 +544,10 @@ INSERT INTO `room` (`RoomId`, `RoomName`, `HotelId`, `RoomType`, `RoomStatus`, `
 --
 
 CREATE TABLE `roomimage` (
-  `RoomImageId` int(11) NOT NULL,
-  `RoomId` int(11) NOT NULL,
-  `RoomImageUrl` varchar(255) NOT NULL,
-  `RoomImageDescription` varchar(255) NOT NULL,
+  `RoomImageId` int NOT NULL,
+  `RoomId` int NOT NULL,
+  `RoomImageUrl` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `RoomImageDescription` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -545,7 +574,6 @@ INSERT INTO `roomimage` (`RoomImageId`, `RoomId`, `RoomImageUrl`, `RoomImageDesc
 (28, 13, 'room_images/e79oH3ti4tCwNJByu6X6nFw9JPfrIQ6VFd9crbYc.jpg', '4125125', '2024-11-20 10:09:43', '2024-11-20 10:09:43'),
 (29, 13, 'room_images/muzRooAkvj8mVHSRSfXSinG2g6W8jnRn0hSga6Dc.jpg', '52412', '2024-11-20 10:09:43', '2024-11-20 10:09:43'),
 (30, 13, 'room_images/HlNMPodRJH4SyiGK6JRJWZObhxNIRRDPzQ2allz9.jpg', '5123412341', '2024-11-20 10:09:43', '2024-11-21 22:42:07'),
-(31, 14, 'room_images/7i1imdtXczUbmnk6oKTUwSElAbjnLbvdqmUgmArZ.jpg', '12412', '2024-11-21 08:36:20', '2024-11-21 08:36:20'),
 (32, 14, 'room_images/vqizkYT4bptppwxVtByxeHT5MkRJXIQLXt60vUCs.jpg', '123412', '2024-11-21 08:36:20', '2024-11-21 08:36:20'),
 (33, 14, 'room_images/naeDMK7J6GHbcbiHfZX0lSjQJYeQ1x7BHxJcwmJC.jpg', '1215124', '2024-11-21 08:36:20', '2024-11-21 08:36:20'),
 (43, 17, 'room_images/hY6BfztGMubdxYwhwnjDc30e6hk09VV1mBc8CA41.jpg', '125123', '2024-11-22 00:13:50', '2024-11-22 00:13:50'),
@@ -561,11 +589,11 @@ INSERT INTO `roomimage` (`RoomImageId`, `RoomId`, `RoomImageUrl`, `RoomImageDesc
 --
 
 CREATE TABLE `room_amenities` (
-  `RoomAmenityId` bigint(20) NOT NULL,
-  `RoomId` int(11) NOT NULL,
-  `AmenityId` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `RoomAmenityId` bigint NOT NULL,
+  `RoomId` int NOT NULL,
+  `AmenityId` int NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -573,16 +601,14 @@ CREATE TABLE `room_amenities` (
 --
 
 INSERT INTO `room_amenities` (`RoomAmenityId`, `RoomId`, `AmenityId`, `created_at`, `updated_at`) VALUES
-(15, 7, 2, '2024-11-20 06:47:19', '2024-11-20 06:47:19'),
 (16, 8, 1, '2024-11-20 06:47:19', '2024-11-20 06:47:19'),
 (21, 7, 1, '2024-11-20 11:45:24', '2024-11-20 11:45:24'),
 (26, 6, 1, '2024-11-20 16:32:11', '2024-11-20 16:32:11'),
 (27, 13, 1, '2024-11-20 17:09:24', '2024-11-20 17:09:24'),
-(28, 13, 2, '2024-11-20 17:09:24', '2024-11-20 17:09:24'),
-(30, 14, 2, '2024-11-21 15:36:08', '2024-11-21 15:36:08'),
 (31, 14, 1, '2024-11-21 15:36:08', '2024-11-21 15:36:08'),
 (36, 17, 1, '2024-11-22 07:13:33', '2024-11-22 07:13:33'),
-(37, 17, 2, '2024-11-22 07:13:33', '2024-11-22 07:13:33');
+(38, 18, 1, '2024-11-27 00:37:03', '2024-11-27 00:37:03'),
+(39, 18, 4, '2024-11-27 00:37:03', '2024-11-27 00:37:03');
 
 -- --------------------------------------------------------
 
@@ -591,12 +617,12 @@ INSERT INTO `room_amenities` (`RoomAmenityId`, `RoomId`, `AmenityId`, `created_a
 --
 
 CREATE TABLE `sessions` (
-  `id` varchar(255) NOT NULL,
-  `user_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `ip_address` varchar(45) DEFAULT NULL,
-  `user_agent` text DEFAULT NULL,
-  `payload` longtext NOT NULL,
-  `last_activity` int(11) NOT NULL
+  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint UNSIGNED DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text COLLATE utf8mb4_unicode_ci,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_activity` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -606,7 +632,9 @@ CREATE TABLE `sessions` (
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('9JFQ0v0yIxIxZbf0R2XXA0t28jRKokd0sji7zV8G', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTW9PZlVQR0c5MXJ5OGVGQ2lmQzFWb0xOTUZwUDFuYThKTVJKM1p6TSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1731910623),
 ('ed8R7RW9TTlKNsBihNCTCXWJaubTJ54GM61irppQ', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiRDdweFZlTFhPektpNE9nZUdlVERiMHFHRTNETGtaSWJWcFVpU2pYZiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1730045877),
+('kWzWvSnz7RHHGjSLMycHP2au3vhdZEyGptqYvDPN', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMHZZSDY1ckhOOU9ZSncwdkRjdmhUTHdZSk1SMHlDazJCTW82cHVQUiI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1732797800),
 ('lgDHnpG1GD0Q6Gqu235P9EE7E8BOFUeqLMpwJT6e', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoicjV5eUU5bjBqNGlqQ05VcmdLaDdWTmx5Q2w2eGdQdXEyS1RHbFBVOSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1730016515),
+('RXHG2Eg3CYWsWRvJpSdamzxQ5bvtAHQPOCALLiCz', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMm84RWlVaktEdDM5dFkzZ1BjRmM0dGZTQjliOGtJNUFncERtdnpXRCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1732666076),
 ('t3SkU82cLTkpbzQfWaR4A3mcoU6ouENsCWybdX9c', NULL, '127.0.0.1', 'PostmanRuntime/7.42.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiOWt6SkdMYkdLeE9QcVVZRXVHdFlRVFk1cDNWenYxdHFmNzNWa01CVyI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1731876253),
 ('W6cuGCPY93ah7fclhyX0JYFzCrhVHAOv5ncLlvfP', NULL, '127.0.0.1', 'PostmanRuntime/7.42.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiTE4xUjJycGxWMDhrQVdEbTdpdWJGeDViMG9WbVFKRXhEY1NBdGVFbCI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1732186930),
 ('Xgu6BxroRbsK9Ucn7yfEfD9B2UHPOf1mioTaQHfc', NULL, '127.0.0.1', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoibnZjZlc1UzJpUUxvcllRY2EwVXgxWGY0QmlFckU3UmNBTEM3azVpaSI7czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1730353999);
@@ -618,13 +646,13 @@ INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, 
 --
 
 CREATE TABLE `user` (
-  `UserId` int(11) NOT NULL,
-  `HotelId` int(11) NOT NULL,
-  `UserName` varchar(15) NOT NULL COMMENT 'Mã NV',
-  `FullName` varchar(30) NOT NULL COMMENT 'Họ và tên NV',
-  `Password` varchar(255) NOT NULL,
+  `UserId` int NOT NULL,
+  `HotelId` int DEFAULT NULL,
+  `UserName` varchar(15) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Mã NV',
+  `FullName` varchar(30) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Họ và tên NV',
+  `Password` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `UserStatus` bit(1) NOT NULL DEFAULT b'1' COMMENT '1 là đang làm việc, 0 là nghỉ việc',
-  `Role` enum('Nhân viên','Quản lý') NOT NULL DEFAULT 'Nhân viên',
+  `Role` enum('Nhân viên','Quản lý') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Nhân viên',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -634,7 +662,9 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`UserId`, `HotelId`, `UserName`, `FullName`, `Password`, `UserStatus`, `Role`, `created_at`, `updated_at`) VALUES
-(6, 25, 'ngocgamer', 'Bảo ngọc', '$2y$12$UCcZP0ueNuSipDt./9EJreRxleOly3DZhxOFffZgASUcT7TdUG9ri', b'1', 'Nhân viên', '2024-11-17 14:02:58', '2024-11-24 00:17:15');
+(6, 1, 'ngocgamer', 'Bảo ngọc', '$2y$12$57jgqVB.yzWr57q1jFd13e9VRUW9DAA8hVen9L6DhbvTea1SL1BNS', b'1', 'Nhân viên', '2024-11-17 14:02:58', '2024-11-25 08:19:49'),
+(7, 3, 'nhathuy', 'Nhật Huy', '$2y$12$HB/RrV/uOEiUkNtH4S0VdOEbjJTNxInVaXb0olaDAFWCSLScCA46q', b'1', 'Nhân viên', '2024-11-25 03:44:56', '2024-11-25 08:16:19'),
+(8, 7, 'ngocgamer123', 'nguyễn tri bảo ngọc', '$2y$12$H7zjFJUKfzoH8kYDNeAqQ.ZO0bErE.FAlkIKRkZHqeX4hW2r7ShCW', b'1', 'Quản lý', '2024-11-26 17:21:53', '2024-11-28 05:52:38');
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -768,91 +798,91 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT cho bảng `amenities`
 --
 ALTER TABLE `amenities`
-  MODIFY `AmenityId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `AmenityId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT cho bảng `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `BookingId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `BookingId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT cho bảng `comment`
 --
 ALTER TABLE `comment`
-  MODIFY `CommentId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `CommentId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT cho bảng `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `CustomerId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `CustomerId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT cho bảng `hotel`
 --
 ALTER TABLE `hotel`
-  MODIFY `HotelId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `HotelId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT cho bảng `hotelimage`
 --
 ALTER TABLE `hotelimage`
-  MODIFY `HotelImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `HotelImageId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT cho bảng `hotel_amenities`
 --
 ALTER TABLE `hotel_amenities`
-  MODIFY `HotelAmenityId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `HotelAmenityId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT cho bảng `location_city`
 --
 ALTER TABLE `location_city`
-  MODIFY `locationCityId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
+  MODIFY `locationCityId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
 -- AUTO_INCREMENT cho bảng `location_district`
 --
 ALTER TABLE `location_district`
-  MODIFY `locationDistrictId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `locationDistrictId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT cho bảng `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT cho bảng `personal_access_tokens`
 --
 ALTER TABLE `personal_access_tokens`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=45;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
 -- AUTO_INCREMENT cho bảng `room`
 --
 ALTER TABLE `room`
-  MODIFY `RoomId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `RoomId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT cho bảng `roomimage`
 --
 ALTER TABLE `roomimage`
-  MODIFY `RoomImageId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=48;
+  MODIFY `RoomImageId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT cho bảng `room_amenities`
 --
 ALTER TABLE `room_amenities`
-  MODIFY `RoomAmenityId` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `RoomAmenityId` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT cho bảng `user`
 --
 ALTER TABLE `user`
-  MODIFY `UserId` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `UserId` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Các ràng buộc cho các bảng đã đổ

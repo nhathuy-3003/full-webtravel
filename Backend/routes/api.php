@@ -84,6 +84,11 @@ Route::get('/month-revenue', [RevenueController::class, 'getTotalRevenue']);
 // ** Xuất file tổng doanh thu tháng
 Route::get('/export-monthly-revenue', [RevenueController::class, 'exportMonthlyRevenue']);
 
+// ** Tính tổng doanh thu ngày
+Route::get('/day-revenue', [RevenueController::class, 'getTotalRevenueByDay']);
+
+// ** Xuất file tổng doanh thu ngày
+Route::get('/export-day-revenue', [RevenueController::class, 'exportDayRevenue']);
 
 // ** Khúc này của bảng Comment
 Route::apiResource('comment', CommentController::class);

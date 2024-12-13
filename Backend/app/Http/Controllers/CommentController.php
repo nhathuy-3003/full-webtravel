@@ -13,34 +13,34 @@ class CommentController extends Controller
     /**
      * Display a listing of the resource.
      */
-  // CommentController.php
+    // CommentController.php
 
-public function index(Request $request)
-{
-    $hotelId = $request->query('hotelId');
+    public function index(Request $request)
+    {
+        $hotelId = $request->query('hotelId');
 
-    if ($hotelId) {
-        // Khi có HotelId, chỉ trả về bình luận đã được duyệt
-        $comments = CommentModel::where('HotelId', $hotelId)
-            ->where('Display', 1)
-            ->get();
-    } else {
-        // Khi không có HotelId, trả về tất cả bình luận (dành cho quản trị viên)
-        $comments = CommentModel::all();
+        if ($hotelId) {
+            // Khi có HotelId, chỉ trả về bình luận đã được duyệt
+            $comments = CommentModel::where('HotelId', $hotelId)
+                ->where('Display', 1)
+                ->get();
+        } else {
+            // Khi không có HotelId, trả về tất cả bình luận (dành cho quản trị viên)
+            $comments = CommentModel::all();
+        }
+
+        if ($comments->isEmpty()) {
+            return response()->json(['message' => 'Không có bình luận nào.'], 404);
+        }
+
+        // Trả về dữ liệu bình luận
+        return response()->json([
+            'data' => CommentResource::collection($comments)
+        ], 200);
     }
 
-    if ($comments->isEmpty()) {
-        return response()->json(['message' => 'Không có bình luận nào.'], 404);
-    }
 
-    // Trả về dữ liệu bình luận
-    return response()->json([
-        'data' => CommentResource::collection($comments)
-    ], 200);
-}
 
-    
-    
 
     /**
      * Store a newly created resource in storage.
@@ -55,7 +55,7 @@ public function index(Request $request)
                 'CustomerName' => 'required|string|max:25',
                 'Email' => 'required|string|max:255|email',
                 'Content' => 'required|string',
-                'Display' => 'in:0,1',
+                // 'Display' => 'in:0,1',
                 'Rating' => 'required|integer|between:0,5'
             ],
             [
@@ -134,14 +134,14 @@ public function index(Request $request)
                 // Custom validation messages
             ]
         );
-    
+
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Cập nhật dữ liệu thất bại',
                 'error' => $validator->messages(),
             ], 422);
         }
-    
+
         $comment->update($request->only([
             'CustomerName',
             'HotelId',
@@ -150,7 +150,7 @@ public function index(Request $request)
             'Display',
             'Rating',
         ]));
-    
+
         return response()->json([
             'message' => 'Cập nhật bình luận thành công',
             'data' => new CommentResource($comment)
@@ -169,15 +169,14 @@ public function index(Request $request)
         ], 200);
     }
     public function getCommentsByHotel($hotelId)
-{
-    // Lấy danh sách bình luận theo HotelId
-    $comments = CommentModel::where('HotelId', $hotelId)->where('Display', 1)->get();
+    {
+        // Lấy danh sách bình luận theo HotelId
+        $comments = CommentModel::where('HotelId', $hotelId)->where('Display', 1)->get();
 
-    if ($comments->isEmpty()) {
-        return response()->json(['message' => 'Không có bình luận nào.'], 404);
+        if ($comments->isEmpty()) {
+            return response()->json(['message' => 'Không có bình luận nào.'], 404);
+        }
+
+        return response()->json(['data' => CommentResource::collection($comments)], 200);
     }
-
-    return response()->json(['data' => CommentResource::collection($comments)], 200);
-}
-
 }
