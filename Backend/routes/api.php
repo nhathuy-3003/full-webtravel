@@ -27,9 +27,11 @@ Route::get('/user', function (Request $request) {
 Route::apiResource('locationCity', LocationCityController::class);
 // ** Khúc này để truy xuất các quận trong thành phố đó
 Route::get('locationCity/{locationCityId}/locationDistrict', [LocationCityController::class, 'getDistrictByCity']);
-// ** Khúc này để lấy dữ liệu thành phố đã phân trang sẵn
-Route::get('/locationCityPage', [LocationCityController::class, 'getCitiesPage']);
+// // ** Khúc này để lấy dữ liệu thành phố đã phân trang sẵn
+// Route::get('/locationCityPage', [LocationCityController::class, 'getCitiesPage']);
 
+// ** Khúc này để lấy tổng thành phố và quận nằm trong 
+Route::get('/getCityAndDistrict', [LocationCityController::class, 'getCityAndDistrictCounts']);
 
 // ** Khúc này của bảng locationDistrict
 Route::apiResource('locationDistrict', LocationDistrictController::class);

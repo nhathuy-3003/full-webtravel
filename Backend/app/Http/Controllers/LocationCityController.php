@@ -192,4 +192,24 @@ class LocationCityController extends Controller
 
         return LocationDistrictResource::collection($district);
     }
+
+    public function getCityAndDistrictCounts()
+    {
+        $cities = LocationCityModel::withCount('district')->get();
+        $totalCities = $cities->count();
+        $totalDistricts = $cities->sum('district_count');
+
+        return response()->json([
+            'message' => 'Thống kê thành công',
+            'total_cities' => $totalCities,
+            'total_districts' => $totalDistricts,
+            'data' => $cities->map(function ($city) {
+                return [
+                    'locationCityId' => $city->locationCityId,
+                    'locationCityName' => $city->locationCityName,
+                    'district_count' => $city->district_count,
+                ];
+            }),
+        ]);
+    }
 }
